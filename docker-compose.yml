@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: coin_collector_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'coin_collector_db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'root_password'
+    ports:
+      - '3306:3306' #opens the port for external access w dbeaver
+    volumes:
+      - db_data:/var/lib/mysql #save data persistently - even if container is stopped
+      - ./DB:/docker-entrypoint-initdb.d #loads initial sql files from DB folder to container on first run
+
+volumes:
+  db_data:
