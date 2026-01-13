@@ -11,7 +11,7 @@ Web-based application for managing a personal coin collection. Developed as a un
 ## 🛠️ Tech Stack
 * **Frontend:** HTML5, CSS3 (Custom Grid Layout, No frameworks).
 * **Backend:** PHP 8.0+.
-* **Database:** PostgreSQL .
+* **Database:** MySQL .
 
 ## 👤 Author
 * **Petko Bonev** - *Uni Project*
