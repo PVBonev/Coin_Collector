@@ -1,10 +1,10 @@
 <?php
 // config/db.php
 
-$host = 'localhost';
+$host = '127.0.0.1';
 $db   = 'coin_collector_db';
-$user = 'root'; //change if u use dif name in XAMPP
-$pass = '';     //change if u have pas
+$user = 'user'; //change if u use dif name in XAMPP
+$pass = 'password';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
