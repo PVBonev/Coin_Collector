@@ -28,15 +28,19 @@ CREATE TABLE IF NOT EXISTS countries (
 CREATE TABLE IF NOT EXISTS catalog_coins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     country_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL, 
+    denomination VARCHAR(50), 
     year INT,
-    face_value VARCHAR(50),
     period VARCHAR(100),
     material VARCHAR(100),
     description TEXT,
+    
     catalog_image_front VARCHAR(255),
     catalog_image_back VARCHAR(255),
-    created_by_user_id INT,
+    
+    created_by_user_id INT, 
+    is_approved TINYINT(1) DEFAULT 0, -- 0 = Pending, 1 = Approved
+    
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (country_id) REFERENCES countries(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id)
@@ -45,12 +49,14 @@ CREATE TABLE IF NOT EXISTS catalog_coins (
 CREATE TABLE IF NOT EXISTS user_coins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    catalog_coin_id INT NOT NULL,
-    grade VARCHAR(50),
-    private_notes TEXT,
+    catalog_coin_id INT NOT NULL, 
+    
+    grade VARCHAR(50), 
     status ENUM('collection', 'swap', 'sell', 'wishlist') DEFAULT 'collection',
+    private_notes TEXT,
     own_image_front VARCHAR(255),
     own_image_back VARCHAR(255),
+    
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (catalog_coin_id) REFERENCES catalog_coins(id) ON DELETE CASCADE
