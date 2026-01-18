@@ -1,5 +1,4 @@
 <?php
-// index.php
 session_start();
 require 'config/db.php';
 
@@ -10,7 +9,6 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// ПРОМЯНА ТУК: cc.face_value -> cc.denomination
 $sql = "SELECT 
             uc.id AS collection_id,
             uc.grade,
@@ -39,7 +37,6 @@ $my_coins = $stmt->fetchAll();
     <title>My Collection - Coin Collector</title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <style>
-        /* ... Запазваме същите стилове и баджове от преди малко ... */
         .collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
         .coin-card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.2s; }
         .coin-card:hover { transform: translateY(-5px); }
