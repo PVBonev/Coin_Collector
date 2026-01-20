@@ -168,7 +168,7 @@ $countries = $stmt->fetchAll();
 
                 <div id="coin-list" class="coin-selection-grid">
                     <div style="grid-column: 1/-1; color: #777; font-style: italic;">
-                        Please select filters from the left...
+                        Please select filters...
                     </div>
                 </div>
 

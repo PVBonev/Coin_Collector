@@ -11,9 +11,13 @@
         <?php if (isset($_SESSION['user_id'])): ?>
             <a href="index.php">My Collection</a>
             
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                <a href="admin/dashboard.php" style="color: #ff9800; font-weight: bold;">Review Requests</a>
+            <?php endif; ?>
             <span style="margin-left: 20px; color: var(--accent-color); font-weight: bold;">
                 Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>
             </span>
+            
             <a href="auth/logout.php" class="btn" style="padding: 5px 15px; margin-left: 10px; background-color: var(--danger); font-size: 0.9rem;">Logout</a>
         
         <?php else: ?>

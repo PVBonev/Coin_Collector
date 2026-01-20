@@ -11,23 +11,24 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-function uploadImage($file, $targetDir) {
+function uploadImage($file, $targetDir)
+{
     if ($file['error'] === UPLOAD_ERR_NO_FILE) {
-        return null; 
+        return null;
     }
-    
+
     if ($file['error'] !== UPLOAD_ERR_OK) {
         throw new Exception("File upload error code: " . $file['error']);
     }
 
     $allowed = ['jpg', 'jpeg', 'png', 'webp'];
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    
+
     if (!in_array($ext, $allowed)) throw new Exception("Invalid file type: $ext");
     if ($file['size'] > 5 * 1024 * 1024) throw new Exception("File too large (Max 5MB)");
 
     $filename = 'coin_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-    
+
     if (move_uploaded_file($file['tmp_name'], $targetDir . $filename)) {
         return 'uploads/coins/' . $filename;
     }
@@ -40,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $country_id = $_POST['country_id'];
         $grade = $_POST['grade'];
         $status = $_POST['status'];
-        $is_manual = $_POST['is_manual']; 
+        $is_manual = $_POST['is_manual'];
 
         //upload logic
         $uploadDir = '../uploads/coins/';
@@ -60,24 +61,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $new_denom = trim($_POST['new_denomination']);
             $new_year = (int)$_POST['new_year'];
 
+            $material = trim($_POST['material'] ?? '');
+            $period = trim($_POST['period'] ?? '');
+            $description = trim($_POST['description'] ?? '');
+
             $stmtNew = $pdo->prepare("
-                INSERT INTO catalog_coins 
-                (country_id, title, denomination, year, catalog_image_front, catalog_image_back, created_by_user_id, is_approved) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, 0)
-            ");
-            
+        INSERT INTO catalog_coins 
+        (country_id, title, denomination, year, material, period, description, catalog_image_front, catalog_image_back, created_by_user_id, is_approved) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+    ");
+
             $stmtNew->execute([
-                $country_id, 
-                $new_title, 
-                $new_denom, 
-                $new_year, 
-                $img_front, 
-                $img_back, 
+                $country_id,
+                $new_title,
+                $new_denom,
+                $new_year,
+                $material,      
+                $period,        
+                $description,   
+                $img_front,
+                $img_back,
                 $user_id
             ]);
-            
-            $catalog_coin_id = $pdo->lastInsertId();
 
+            $catalog_coin_id = $pdo->lastInsertId();
         } else {
             if (empty($_POST['catalog_coin_id'])) {
                 throw new Exception("Please select a coin from the list.");
@@ -85,19 +92,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $catalog_coin_id = $_POST['catalog_coin_id'];
         }
 
-        //add to User Collection
+        //add to user collection
         $stmtUser = $pdo->prepare("
             INSERT INTO user_coins 
             (user_id, catalog_coin_id, grade, status, own_image_front, own_image_back) 
             VALUES (?, ?, ?, ?, ?, ?)
         ");
-        
+
         $stmtUser->execute([
-            $user_id, 
-            $catalog_coin_id, 
-            $grade, 
-            $status, 
-            $img_front, 
+            $user_id,
+            $catalog_coin_id,
+            $grade,
+            $status,
+            $img_front,
             $img_back
         ]);
 
@@ -105,7 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['success'] = "Coin added successfully!";
         header("Location: ../index.php");
         exit;
-
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
@@ -116,4 +122,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 }
-?>

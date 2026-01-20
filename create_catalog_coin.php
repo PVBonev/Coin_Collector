@@ -3,7 +3,10 @@
 session_start();
 require 'config/db.php';
 
-if (!isset($_SESSION['user_id'])) { header("Location: login.php"); exit; }
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
 
 //if user comes from add_coin with a chosen country, preselect it
 $pre_country_id = isset($_GET['country_id']) ? (int)$_GET['country_id'] : '';
@@ -14,11 +17,13 @@ $countries = $stmt->fetchAll();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Request New Coin</title>
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
+
 <body>
     <?php include 'includes/navbar.php'; ?>
 
@@ -30,13 +35,13 @@ $countries = $stmt->fetchAll();
             </p>
 
             <form action="actions/add_coin_process.php" method="POST" enctype="multipart/form-data">
-                
+
                 <div class="form-group">
                     <label>Country *</label>
                     <select name="country_id" required>
                         <option value="">-- Select Country --</option>
                         <?php foreach ($countries as $country): ?>
-                            <option value="<?php echo $country['id']; ?>" <?php if($country['id'] == $pre_country_id) echo 'selected'; ?>>
+                            <option value="<?php echo $country['id']; ?>" <?php if ($country['id'] == $pre_country_id) echo 'selected'; ?>>
                                 <?php echo htmlspecialchars($country['name']); ?>
                             </option>
                         <?php endforeach; ?>
@@ -57,6 +62,22 @@ $countries = $stmt->fetchAll();
                         <label>Year *</label>
                         <input type="number" name="new_year" required min="1000" max="<?php echo date('Y'); ?>">
                     </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Material (Optional)</label>
+                        <input type="text" name="material" placeholder="e.g. Silver .925, Copper-Nickel">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Period (Optional)</label>
+                        <input type="text" name="period" placeholder="e.g. People's Republic">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description / Interesting Facts (Optional)</label>
+                    <textarea name="description" rows="3" placeholder="Write something interesting about this coin..."></textarea>
                 </div>
 
                 <hr>
@@ -88,7 +109,7 @@ $countries = $stmt->fetchAll();
                     <input type="file" name="img_front" accept="image/*" required>
                     <small>Required for new catalog entries.</small>
                 </div>
-                
+
                 <div class="form-group">
                     <label>My Photo (Back)</label>
                     <input type="file" name="img_back" accept="image/*">
@@ -101,4 +122,5 @@ $countries = $stmt->fetchAll();
         </div>
     </div>
 </body>
+
 </html>
