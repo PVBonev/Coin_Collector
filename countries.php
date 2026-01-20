@@ -14,11 +14,13 @@ $countries = $stmt->fetchAll();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Countries - Coin Collector</title>
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
+
 <body>
     <?php include 'includes/navbar.php'; ?>
 
@@ -30,8 +32,8 @@ $countries = $stmt->fetchAll();
 
         <div class="coin-grid">
             <?php foreach ($countries as $country): ?>
-                
-                <a href="country_details.php?id=<?php echo $country['id']; ?>" style="text-decoration: none; color: inherit;">
+
+                <a href="country.php?id=<?php echo $country['id']; ?>" style="text-decoration: none; color: inherit;">
                     <div class="coin-card">
                         <div class="flag-wrapper">
                             <?php if ($country['flag_image']): ?>
@@ -40,7 +42,7 @@ $countries = $stmt->fetchAll();
                                 <div style="width:100%; height:100%; background:#ccc; display:flex; align-items:center; justify-content:center;">No Flag</div>
                             <?php endif; ?>
                         </div>
-                        
+
                         <div class="coin-info" style="text-align: center;">
                             <div class="coin-title" style="font-size: 1.2rem;">
                                 <?php echo htmlspecialchars($country['name']); ?>
@@ -58,4 +60,5 @@ $countries = $stmt->fetchAll();
         </div>
     </div>
 </body>
+
 </html>
