@@ -46,13 +46,43 @@ $my_coins = $stmt->fetchAll();
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h1>My Collection</h1>
-            <a href="add_coin.php" class="btn btn-accent">+ Add New Coin</a>
+            
+            <div style="display: flex; gap: 10px;">
+                <a href="data_management.php" class="btn" style="background: #6c757d; color: white; font-size: 0.9rem; display: flex; align-items: center;">
+                    &#128193; Import / Export
+                </a>
+                
+                <a href="add_coin.php" class="btn btn-accent">
+                    + Add New Coin
+                </a>
+            </div>
         </div>
 
         <?php if (isset($_SESSION['success'])): ?>
             <div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
                 <?php echo $_SESSION['success'];
                 unset($_SESSION['success']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['import_errors'])): ?>
+            <div style="background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <strong>Warning:</strong> The following coins were NOT imported (not found in catalog or bad data):
+                <ul style="margin: 10px 0 0 20px; max-height: 200px; overflow-y: auto;">
+                    <?php foreach ($_SESSION['import_errors'] as $error): ?>
+                        <li style="margin-bottom: 5px;"><?php echo $error; ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <div style="margin-top: 10px; font-size: 0.9rem;">
+                    <em>Tip: Ensure the Country, Year, Denomination, and Title match exactly with the catalog.</em>
+                </div>
+            </div>
+            <?php unset($_SESSION['import_errors']); // Изчистваме грешките след показване ?>
+        <?php endif; ?>
+        
+        <?php if (isset($_SESSION['error'])): ?>
+             <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
             </div>
         <?php endif; ?>
 
