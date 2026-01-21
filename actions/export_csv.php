@@ -19,7 +19,7 @@ $output = fopen('php://output', 'w');
 fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
 //writing column headers
-fputcsv($output, ['Country', 'Year', 'Denomination', 'Title', 'Grade', 'Status', 'Notes']);
+fputcsv($output, ['Country', 'Year', 'Denomination', 'Title', 'Grade', 'Status', 'Price', 'Notes']);
 
 $sql = "SELECT 
             c.name as country_name,
@@ -28,6 +28,7 @@ $sql = "SELECT
             cc.title,
             uc.grade,
             uc.status,
+            uc.price,
             uc.private_notes
         FROM user_coins uc
         JOIN catalog_coins cc ON uc.catalog_coin_id = cc.id

@@ -2,10 +2,12 @@
 session_start();
 require '../config/db.php';
 
-if (!isset($_SESSION['user_id'])) { die("Access Denied"); }
+if (!isset($_SESSION['user_id'])) {
+    die("Access Denied");
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
-    
+
     $file = $_FILES['csv_file'];
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
@@ -16,19 +18,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
     }
 
     $handle = fopen($file['tmp_name'], "r");
-    
-    $header = fgetcsv($handle); 
+
+    $header = fgetcsv($handle);
 
     $imported = 0;
     $skipped_count = 0;
-    $skipped_items = []; 
+    $skipped_items = [];
     $rowNum = 1;
 
     while (($row = fgetcsv($handle)) !== FALSE) {
         $rowNum++;
-        
+
         if (count($row) < 4) {
-            continue; 
+            continue;
         }
 
         $country = trim($row[0]);
@@ -37,7 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
         $title   = trim($row[3]);
         $grade   = trim($row[4]);
         $status  = trim($row[5]);
-        $notes   = isset($row[6]) ? trim($row[6]) : '';
+        $priceRaw = isset($row[6]) ? trim($row[6]) : '0'; //remove any non-numeric characters like $ or €
+        $price    = (float)preg_replace('/[^0-9.]/', '', $priceRaw);
+        $notes    = isset($row[7]) ? trim($row[7]) : '';
 
         try {
             $stmt = $pdo->prepare("
@@ -45,9 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
                 FROM catalog_coins cc
                 JOIN countries c ON cc.country_id = c.id
                 WHERE c.name = ? 
-                  AND cc.year = ? 
-                  AND cc.denomination = ? 
-                  AND cc.title = ?
+                    AND cc.year = ? 
+                    AND cc.denomination = ? 
+                    AND cc.title = ?
                 LIMIT 1
             ");
             $stmt->execute([$country, $year, $denom, $title]);
@@ -55,27 +59,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
 
             if ($coin) {
                 $insert = $pdo->prepare("
-                    INSERT INTO user_coins (user_id, catalog_coin_id, grade, status, private_notes)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO user_coins (user_id, catalog_coin_id, grade, status, price, private_notes)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 ");
-                
-                $validGrades = ['UNC', 'XF', 'VF', 'F', 'Good'];
-                
+
+                $validGrades = ['UNC', 'AU', 'XF', 'VF', 'F', 'VG', 'G'];
+
                 if (empty($grade) || !in_array($grade, $validGrades)) {
-                    $grade = 'Good';
+                    $grade = 'G';
                 }
-                
+
                 $validStatus = ['collection', 'swap', 'sell'];
                 if (!in_array($status, $validStatus)) $status = 'collection';
 
-                $insert->execute([$_SESSION['user_id'], $coin['id'], $grade, $status, $notes]);
+                $insert->execute([$_SESSION['user_id'], $coin['id'], $grade, $status, $price, $notes]);
                 $imported++;
             } else {
-                //saving which coin is ksipped
                 $skipped_count++;
                 $skipped_items[] = "Row $rowNum: <strong>$country</strong> - $denom ($year) - $title";
             }
-
         } catch (Exception $e) {
             $skipped_count++;
             $skipped_items[] = "Row $rowNum: System error for $denom ($year)";
@@ -92,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
     if ($skipped_count > 0) {
         //save the skipped items in session to show later
         $_SESSION['import_errors'] = $skipped_items;
-        
+
         if ($imported == 0) {
             $_SESSION['error'] = "No coins were imported. Check the error list below.";
         }
@@ -102,4 +104,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
     header("Location: ../index.php");
     exit;
 }
-?>

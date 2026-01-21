@@ -87,11 +87,13 @@ $countries = $stmt->fetchAll();
                     <div class="form-group" style="flex: 1;">
                         <label>Condition</label>
                         <select name="grade">
-                            <option value="UNC">Uncirculated (UNC)</option>
+                            <option value="UNC">Uncirculated (UNC/MS)</option>
+                            <option value="AU">About Uncirculated (AU)</option>
                             <option value="XF">Extremely Fine (XF)</option>
                             <option value="VF">Very Fine (VF)</option>
                             <option value="F">Fine (F)</option>
-                            <option value="Good">Good</option>
+                            <option value="VG">Very Good (VG)</option>
+                            <option value="G">Good/Fair (G)</option>
                         </select>
                     </div>
                     <div class="form-group" style="flex: 1;">
