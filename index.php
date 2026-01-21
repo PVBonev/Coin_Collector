@@ -38,90 +38,6 @@ $my_coins = $stmt->fetchAll();
     <meta charset="UTF-8">
     <title>My Collection - Coin Collector</title>
     <link rel="stylesheet" href="assets/css/styles.css">
-    <style>
-        .collection-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .coin-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: transform 0.2s;
-        }
-
-        .coin-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .coin-img-box {
-            width: 100%;
-            height: 200px;
-            background: #f4f4f4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .coin-img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .coin-details {
-            padding: 15px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-            letter-spacing: 0.5px;
-        }
-
-        .grade-good {
-            background: linear-gradient(135deg, #b0bec5, #78909c);
-        }
-
-        .grade-f {
-            background: linear-gradient(135deg, #4fc3f7, #29b6f6);
-        }
-
-        .grade-vf {
-            background: linear-gradient(135deg, #1e88e5, #1565c0);
-        }
-
-        .grade-xf {
-            background: linear-gradient(135deg, #1565c0, #0d47a1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .grade-unc {
-            background: linear-gradient(135deg, #0d47a1, #002171);
-            color: #ffd700;
-            border: 1px solid #ffd700;
-            box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
-        }
-
-        .status-badge {
-            font-size: 0.7rem;
-            color: #666;
-            border: 1px solid #ddd;
-            background: #fff;
-            margin-right: 5px;
-        }
-    </style>
 </head>
 
 <body>
@@ -145,61 +61,62 @@ $my_coins = $stmt->fetchAll();
         <?php if (count($my_coins) > 0): ?>
             <div class="collection-grid">
                 <?php foreach ($my_coins as $coin): ?>
-                    <div class="coin-card">
-                        <div class="coin-img-box">
-                            <?php
-                            $displayImage = 'assets/images/no-coin.png'; // Default placeholder
+                    <a href="user_coin_details.php?id=<?php echo $coin['collection_id']; ?>" style="text-decoration: none; color: inherit;">
+                        <div class="coin-card">
+                            <div class="coin-img-box">
+                                <?php
+                                $displayImage = 'assets/images/no-coin.png'; // Default placeholder
 
-                            if (!empty($coin['own_image_front'])) {
-                                $displayImage = $coin['own_image_front'];
-                            } elseif (!empty($coin['catalog_image_front'])) {
-                                $displayImage = $coin['catalog_image_front'];
-                            }
-                            ?>
+                                if (!empty($coin['own_image_front'])) {
+                                    $displayImage = $coin['own_image_front'];
+                                } elseif (!empty($coin['catalog_image_front'])) {
+                                    $displayImage = $coin['catalog_image_front'];
+                                }
+                                ?>
 
-                            <?php if ($displayImage !== 'assets/images/no-coin.png'): ?>
-                                <img src="<?php echo htmlspecialchars($displayImage); ?>" alt="Coin Image">
-                            <?php else: ?>
-                                <span style="color: #999;">No Image</span>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="coin-details">
-                            <div style="display: flex; justify-content: space-between; align-items: start;">
-                                <h3 style="margin: 0; font-size: 1.1rem;"><?php echo htmlspecialchars($coin['title']); ?></h3>
-                                <?php if ($coin['flag_image']): ?>
-                                    <img src="<?php echo htmlspecialchars($coin['flag_image']); ?>" style="width: 25px; border: 1px solid #eee;">
+                                <?php if ($displayImage !== 'assets/images/no-coin.png'): ?>
+                                    <img src="<?php echo htmlspecialchars($displayImage); ?>" alt="Coin Image">
+                                <?php else: ?>
+                                    <span style="color: #999;">No Image</span>
                                 <?php endif; ?>
                             </div>
 
-                            <p style="color: #666; font-size: 0.9rem; margin: 5px 0;">
-                                <?php echo htmlspecialchars($coin['country_name']); ?> • <?php echo $coin['year']; ?>
-                            </p>
-
-                            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-weight: bold; font-size: 0.9rem;">
-                                    <?php echo htmlspecialchars($coin['denomination']); ?>
-                                </span>
-
-                                <div>
-                                    <?php if ($coin['status'] !== 'collection'): ?>
-                                        <span class="badge status-badge"><?php echo ucfirst($coin['status']); ?></span>
+                            <div class="coin-details">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <h3 style="margin: 0; font-size: 1.1rem;"><?php echo htmlspecialchars($coin['title']); ?></h3>
+                                    <?php if ($coin['flag_image']): ?>
+                                        <img src="<?php echo htmlspecialchars($coin['flag_image']); ?>" style="width: 25px; border: 1px solid #eee;">
                                     <?php endif; ?>
+                                </div>
 
-                                    <?php
-                                    $g = trim($coin['grade']);
-                                    $gradeClass = 'grade-good';
-                                    if ($g == 'F') $gradeClass = 'grade-f';
-                                    if ($g == 'VF') $gradeClass = 'grade-vf';
-                                    if ($g == 'XF') $gradeClass = 'grade-xf';
-                                    if ($g == 'UNC') $gradeClass = 'grade-unc';
-                                    ?>
-                                    <span class="badge <?php echo $gradeClass; ?>"><?php echo htmlspecialchars($coin['grade']); ?></span>
+                                <p style="color: #666; font-size: 0.9rem; margin: 5px 0;">
+                                    <?php echo htmlspecialchars($coin['country_name']); ?> • <?php echo $coin['year']; ?>
+                                </p>
+
+                                <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: bold; font-size: 0.9rem;">
+                                        <?php echo htmlspecialchars($coin['denomination']); ?>
+                                    </span>
+
+                                    <div>
+                                        <?php if ($coin['status'] !== 'collection'): ?>
+                                            <span class="badge status-badge"><?php echo ucfirst($coin['status']); ?></span>
+                                        <?php endif; ?>
+
+                                        <?php
+                                        $g = trim($coin['grade']);
+                                        $gradeClass = 'grade-good';
+                                        if ($g == 'F') $gradeClass = 'grade-f';
+                                        if ($g == 'VF') $gradeClass = 'grade-vf';
+                                        if ($g == 'XF') $gradeClass = 'grade-xf';
+                                        if ($g == 'UNC') $gradeClass = 'grade-unc';
+                                        ?>
+                                        <span class="badge <?php echo $gradeClass; ?>"><?php echo htmlspecialchars($coin['grade']); ?></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
+                    </a> <?php endforeach; ?>
             </div>
         <?php else: ?>
             <div class="card" style="text-align: center; padding: 40px;">
