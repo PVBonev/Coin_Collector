@@ -77,7 +77,7 @@ $my_coins = $stmt->fetchAll();
                     <em>Tip: Ensure the Country, Year, Denomination, and Title match exactly with the catalog.</em>
                 </div>
             </div>
-            <?php unset($_SESSION['import_errors']); // Изчистваме грешките след показване ?>
+            <?php unset($_SESSION['import_errors']);?>
         <?php endif; ?>
         
         <?php if (isset($_SESSION['error'])): ?>
@@ -95,7 +95,7 @@ $my_coins = $stmt->fetchAll();
                         <div class="coin-card">
                             <div class="coin-img-box">
                                 <?php
-                                $displayImage = 'assets/images/no-coin.png'; // Default placeholder
+                                $displayImage = 'assets/images/no-coin.png'; //default image for when we don't have an image for a coin
 
                                 if (!empty($coin['own_image_front'])) {
                                     $displayImage = $coin['own_image_front'];
