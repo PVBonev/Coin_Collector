@@ -192,7 +192,7 @@ input:focus {
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
-  justify_content: center;
+  justify_content: center;/* some sort of error with this element... check at some point */
 }
 .flag-wrapper img {
   width: 100%;
@@ -205,6 +205,7 @@ input:focus {
   color: var(--text-light);
   font-weight: bold;
 }
+
 /* Badges and Grades */
 .collection-grid {
   display: grid;
@@ -280,37 +281,28 @@ input:focus {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   letter-spacing: 0.5px;
 }
-
-.grade-good {
-  background: linear-gradient(135deg, #b0bec5, #78909c);
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+    background: #777;
 }
 
-.grade-f {
-  background: linear-gradient(135deg, #4fc3f7, #29b6f6);
-}
-
-.grade-vf {
-  background: linear-gradient(135deg, #1e88e5, #1565c0);
-}
-
-.grade-xf {
-  background: linear-gradient(135deg, #1565c0, #0d47a1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.grade-unc {
-  background: linear-gradient(135deg, #0d47a1, #002171);
-  color: #ffd700;
-  border: 1px solid #ffd700;
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
-}
+.grade-unc { background-color: #28a745; border: 1px solid #1e7e34; } 
+.grade-au  { background-color: #20c997; color: #fff; } 
+.grade-xf  { background-color: #17a2b8; } 
+.grade-vf  { background-color: #007bff; }
+.grade-f   { background-color: #6c757d; } 
+.grade-vg  { background-color: #5a6268; } 
+.grade-g   { background-color: #865c36; } 
 
 .status-badge {
-  font-size: 0.7rem;
-  color: #666;
-  border: 1px solid #ddd;
-  background: #fff;
-  margin-right: 5px;
+    background-color: #ffc107;
+    color: #212529;
+    margin-right: 5px;
 }
 
 /* add_coin.php */

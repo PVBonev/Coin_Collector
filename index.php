@@ -46,12 +46,12 @@ $my_coins = $stmt->fetchAll();
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h1>My Collection</h1>
-            
+
             <div style="display: flex; gap: 10px;">
                 <a href="data_management.php" class="btn" style="background: #6c757d; color: white; font-size: 0.9rem; display: flex; align-items: center;">
                     &#128193; Import / Export
                 </a>
-                
+
                 <a href="add_coin.php" class="btn btn-accent">
                     + Add New Coin
                 </a>
@@ -77,12 +77,13 @@ $my_coins = $stmt->fetchAll();
                     <em>Tip: Ensure the Country, Year, Denomination, and Title match exactly with the catalog.</em>
                 </div>
             </div>
-            <?php unset($_SESSION['import_errors']);?>
+            <?php unset($_SESSION['import_errors']); ?>
         <?php endif; ?>
-        
+
         <?php if (isset($_SESSION['error'])): ?>
-             <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-                <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
+            <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                <?php echo $_SESSION['error'];
+                unset($_SESSION['error']); ?>
             </div>
         <?php endif; ?>
 
@@ -135,11 +136,16 @@ $my_coins = $stmt->fetchAll();
 
                                         <?php
                                         $g = trim($coin['grade']);
-                                        $gradeClass = 'grade-good';
-                                        if ($g == 'F') $gradeClass = 'grade-f';
-                                        if ($g == 'VF') $gradeClass = 'grade-vf';
-                                        if ($g == 'XF') $gradeClass = 'grade-xf';
-                                        if ($g == 'UNC') $gradeClass = 'grade-unc';
+                                        $gradeClass = 'grade-default'; //gray by default
+
+                                        //colors for grades
+                                        if ($g == 'UNC') $gradeClass = 'grade-unc'; 
+                                        if ($g == 'AU')  $gradeClass = 'grade-au';  
+                                        if ($g == 'XF')  $gradeClass = 'grade-xf';  
+                                        if ($g == 'VF')  $gradeClass = 'grade-vf';  
+                                        if ($g == 'F')   $gradeClass = 'grade-f';   
+                                        if ($g == 'VG')  $gradeClass = 'grade-vg';  
+                                        if ($g == 'G')   $gradeClass = 'grade-g';   
                                         ?>
                                         <span class="badge <?php echo $gradeClass; ?>"><?php echo htmlspecialchars($coin['grade']); ?></span>
                                     </div>

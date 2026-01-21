@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS user_coins (
     
     grade VARCHAR(50), 
     status ENUM('collection', 'swap', 'sell', 'wishlist') DEFAULT 'collection',
+    price DECIMAL(10,2) DEFAULT 0.00,
     private_notes TEXT,
     own_image_front VARCHAR(255),
     own_image_back VARCHAR(255),

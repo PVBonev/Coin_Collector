@@ -33,14 +33,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif ($action === 'update') {
         $grade = $_POST['grade'];
         $status = $_POST['status'];
+        $price = (float)$_POST['price']; 
         $notes = trim($_POST['private_notes']);
         
         $uploadDir = '../uploads/coins/';
         $img_front = uploadMyImage($_FILES['img_front'], $uploadDir);
         $img_back = uploadMyImage($_FILES['img_back'], $uploadDir);
 
-        $sql = "UPDATE user_coins SET grade=?, status=?, private_notes=?";
-        $params = [$grade, $status, $notes];
+        $sql = "UPDATE user_coins SET grade=?, status=?, price=?, private_notes=?";
+        $params = [$grade, $status, $price, $notes];
 
         if ($img_front) {
             $sql .= ", own_image_front=?";

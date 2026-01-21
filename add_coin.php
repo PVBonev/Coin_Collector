@@ -185,11 +185,13 @@ $countries = $stmt->fetchAll();
                             <div class="form-group" style="flex: 1;">
                                 <label>Condition</label>
                                 <select name="grade">
-                                    <option value="UNC">Uncirculated (UNC)</option>
+                                    <option value="UNC">Uncirculated (UNC/MS)</option>
+                                    <option value="AU">About Uncirculated (AU)</option>
                                     <option value="XF">Extremely Fine (XF)</option>
                                     <option value="VF">Very Fine (VF)</option>
                                     <option value="F">Fine (F)</option>
-                                    <option value="Good">Good</option>
+                                    <option value="VG">Very Good (VG)</option>
+                                    <option value="G">Good/Fair (G)</option>
                                 </select>
                             </div>
                             <div class="form-group" style="flex: 1;">
@@ -233,12 +235,12 @@ $countries = $stmt->fetchAll();
         countrySelect.addEventListener('change', function() {
             const countryId = this.value;
             hiddenCountryId.value = countryId;
-            
+
             //reset UI
             detailsForm.style.display = 'none';
             yearSelect.innerHTML = '<option value="">Loading...</option>';
             yearSelect.disabled = true;
-            
+
             if (countryId) {
                 //load years for that country
                 fetch(`api/get_catalog_data.php?type=years&country_id=${countryId}`)
@@ -252,7 +254,7 @@ $countries = $stmt->fetchAll();
                     });
 
                 //immediately load coins for all years
-                loadCoins(countryId, null); 
+                loadCoins(countryId, null);
 
             } else {
                 yearSelect.innerHTML = '<option value="">-- Select Country First --</option>';
@@ -286,7 +288,7 @@ $countries = $stmt->fetchAll();
                     if (data.length > 0) {
                         data.forEach(coin => {
                             const imgUrl = coin.catalog_image_front ? coin.catalog_image_front : 'assets/images/no-coin.png';
-                            
+
                             const card = document.createElement('div');
                             card.className = 'coin-option-card';
                             card.innerHTML = `
@@ -321,12 +323,14 @@ $countries = $stmt->fetchAll();
         function selectCoin(cardElement, coinData) {
             document.querySelectorAll('.coin-option-card').forEach(c => c.classList.remove('selected'));
             cardElement.classList.add('selected');
-            
+
             hiddenCatalogId.value = coinData.id;
             selectedCoinName.innerText = `Selected: ${coinData.denomination} - ${coinData.title}`;
-            
+
             detailsForm.style.display = 'block';
-            detailsForm.scrollIntoView({ behavior: 'smooth' });
+            detailsForm.scrollIntoView({
+                behavior: 'smooth'
+            });
         }
     </script>
 </body>
