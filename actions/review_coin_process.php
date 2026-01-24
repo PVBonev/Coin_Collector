@@ -39,6 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $period = trim($_POST['period']);
             $desc = trim($_POST['description']);
 
+            $weight = !empty($_POST['weight']) ? $_POST['weight'] : NULL;
+            $diameter = !empty($_POST['diameter']) ? $_POST['diameter'] : NULL;
+            $thickness = !empty($_POST['thickness']) ? $_POST['thickness'] : NULL;
+            $mintage = !empty($_POST['mintage']) ? $_POST['mintage'] : NULL;
+
             $uploadDir = '../uploads/coins/';
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
@@ -48,9 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $sql = "UPDATE catalog_coins SET 
                     title = ?, denomination = ?, year = ?, 
                     material = ?, period = ?, description = ?, 
+                    weight = ?, diameter = ?, thickness = ?, mintage = ?,
                     is_approved = 1";
             
-            $params = [$title, $denom, $year, $material, $period, $desc];
+            $params = [
+                $title, $denom, $year, 
+                $material, $period, $desc,
+                $weight, $diameter, $thickness, $mintage
+            ];
 
             if ($new_front) {
                 $sql .= ", catalog_image_front = ?";

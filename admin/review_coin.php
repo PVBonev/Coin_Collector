@@ -1,4 +1,5 @@
 <?php
+// admin/review_coin.php
 session_start();
 require '../config/db.php';
 
@@ -8,7 +9,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-//take the coin request details
+// Взимаме детайлите за заявената монета
+// Тъй като правим SELECT cc.*, новите колони (weight, diameter и т.н.) идват автоматично
 $stmt = $pdo->prepare("
     SELECT cc.*, c.name as country_name 
     FROM catalog_coins cc
@@ -87,7 +89,8 @@ if (!$coin) {
                 <h3>Edit & Approve Details</h3>
                 <p style="color: #666; font-size: 0.9rem;">Clean up the data before publishing to the catalog.</p>
 
-                <form action="../actions/review_coin_process.php" method="POST" enctype="multipart/form-data"> <input type="hidden" name="coin_id" value="<?php echo $coin['id']; ?>">
+                <form action="../actions/review_coin_process.php" method="POST" enctype="multipart/form-data"> 
+                    <input type="hidden" name="coin_id" value="<?php echo $coin['id']; ?>">
 
                     <div class="form-group">
                         <label>Country (Read Only)</label>
@@ -119,10 +122,36 @@ if (!$coin) {
                         <input type="text" name="period" value="<?php echo htmlspecialchars($coin['period'] ?? ''); ?>">
                     </div>
 
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #eee;">
+                        <h4 style="margin-top: 0; margin-bottom: 10px; color: #555; font-size: 0.9rem;">Technical Specifications</h4>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label style="font-size: 0.85rem;">Weight (g)</label>
+                                <input type="number" step="0.01" name="weight" value="<?php echo htmlspecialchars($coin['weight'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label style="font-size: 0.85rem;">Diameter (mm)</label>
+                                <input type="number" step="0.01" name="diameter" value="<?php echo htmlspecialchars($coin['diameter'] ?? ''); ?>">
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label style="font-size: 0.85rem;">Thickness (mm)</label>
+                                <input type="number" step="0.01" name="thickness" value="<?php echo htmlspecialchars($coin['thickness'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label style="font-size: 0.85rem;">Mintage</label>
+                                <input type="number" name="mintage" value="<?php echo htmlspecialchars($coin['mintage'] ?? ''); ?>">
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label>Description</label>
                         <textarea name="description" rows="4"><?php echo htmlspecialchars($coin['description'] ?? ''); ?></textarea>
                     </div>
+                    
                     <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
                     <h4 style="margin-bottom: 10px;">Official Catalog Images</h4>
@@ -141,6 +170,7 @@ if (!$coin) {
                         <label>Catalog Photo (Back)</label>
                         <input type="file" name="admin_img_back" accept="image/*">
                     </div>
+                    
                     <div class="action-bar">
                         <button type="submit" name="action" value="approve" class="btn btn-accent" style="flex: 2; background: #28a745;">
                             &#10003; Save & Publish

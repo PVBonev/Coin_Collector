@@ -11,9 +11,11 @@ if (!isset($_SESSION['user_id'])) {
 $user_coin_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $user_id = $_SESSION['user_id'];
 
+// ВНИМАНИЕ: Добавихме новите колони в SELECT заявката (cc.weight, cc.diameter и т.н.)
 $sql = "SELECT 
             uc.*,
             cc.title, cc.denomination, cc.year, cc.material, cc.period,
+            cc.weight, cc.diameter, cc.thickness, cc.mintage,
             cc.catalog_image_front, cc.catalog_image_back,
             c.name as country_name, c.flag_image
         FROM user_coins uc
@@ -88,12 +90,34 @@ if (!$coin) {
                         <?php echo htmlspecialchars($coin['grade']); ?>
                     </span>
                 </div>
+                
                 <div class="data-row">
-                    <span class="data-label">Price / Value</span>
+                    <span class="data-label">Current Value</span>
                     <span class="data-value" style="color: var(--accent-color); font-weight: bold;">
                         <?php echo $coin['price'] > 0 ? number_format($coin['price'], 2) . ' lv.' : '-'; ?>
                     </span>
                 </div>
+
+                <?php if($coin['purchase_price'] > 0): ?>
+                <div class="data-row">
+                    <span class="data-label">Paid Price</span>
+                    <span class="data-value"><?php echo number_format($coin['purchase_price'], 2); ?> lv.</span>
+                </div>
+                <?php endif; ?>
+
+                <?php if($coin['purchase_location']): ?>
+                <div class="data-row">
+                    <span class="data-label">Acquired From</span>
+                    <span class="data-value"><?php echo htmlspecialchars($coin['purchase_location']); ?></span>
+                </div>
+                <?php endif; ?>
+
+                <?php if($coin['purchase_date']): ?>
+                <div class="data-row">
+                    <span class="data-label">Date Acquired</span>
+                    <span class="data-value"><?php echo date('d M Y', strtotime($coin['purchase_date'])); ?></span>
+                </div>
+                <?php endif; ?>
                 <div class="data-row">
                     <span class="data-label">Status</span>
                     <span class="data-value"><?php echo ucfirst($coin['status']); ?></span>
@@ -127,6 +151,33 @@ if (!$coin) {
                     <span class="data-value"><?php echo htmlspecialchars($coin['period']); ?></span>
                 </div>
 
+                <?php if($coin['weight']): ?>
+                    <div class="data-row">
+                        <span class="data-label">Weight</span>
+                        <span class="data-value"><?php echo $coin['weight']; ?> g</span>
+                    </div>
+                <?php endif; ?>
+
+                <?php if($coin['diameter']): ?>
+                    <div class="data-row">
+                        <span class="data-label">Diameter</span>
+                        <span class="data-value"><?php echo $coin['diameter']; ?> mm</span>
+                    </div>
+                <?php endif; ?>
+
+                <?php if($coin['thickness']): ?>
+                    <div class="data-row">
+                        <span class="data-label">Thickness</span>
+                        <span class="data-value"><?php echo $coin['thickness']; ?> mm</span>
+                    </div>
+                <?php endif; ?>
+
+                <?php if($coin['mintage']): ?>
+                    <div class="data-row">
+                        <span class="data-label">Mintage</span>
+                        <span class="data-value"><?php echo number_format($coin['mintage']); ?></span>
+                    </div>
+                <?php endif; ?>
                 <div style="margin-top: 20px; text-align: center;">
                     <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" style="color: var(--accent-color); font-size: 0.9rem;">
                         View Global Catalog Page &rarr;
