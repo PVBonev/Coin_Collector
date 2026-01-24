@@ -134,8 +134,29 @@ $owners = $stmtUsers->fetchAll();
                         <tr><td class="specs-label">Value</td><td><?php echo htmlspecialchars($coin['denomination']); ?></td></tr>
                         <tr><td class="specs-label">Material</td><td><?php echo htmlspecialchars($coin['material'] ?? 'Unknown'); ?></td></tr>
                         <tr><td class="specs-label">Period</td><td><?php echo htmlspecialchars($coin['period'] ?? 'Unknown'); ?></td></tr>
+                        <table class="specs-table">
+    <tr><td class="specs-label">Country</td><td><?php echo htmlspecialchars($coin['country_name']); ?></td></tr>
+    <tr><td class="specs-label">Year</td><td><?php echo $coin['year']; ?></td></tr>
+    <tr><td class="specs-label">Value</td><td><?php echo htmlspecialchars($coin['denomination']); ?></td></tr>
+    <tr><td class="specs-label">Material</td><td><?php echo htmlspecialchars($coin['material'] ?? 'Unknown'); ?></td></tr>
+    <tr><td class="specs-label">Period</td><td><?php echo htmlspecialchars($coin['period'] ?? 'Unknown'); ?></td></tr>
+    
+    <?php if(!empty($coin['weight'])): ?>
+        <tr><td class="specs-label">Weight</td><td><?php echo $coin['weight']; ?> g</td></tr>
+    <?php endif; ?>
+    <?php if(!empty($coin['diameter'])): ?>
+        <tr><td class="specs-label">Diameter</td><td><?php echo $coin['diameter']; ?> mm</td></tr>
+    <?php endif; ?>
+    <?php if(!empty($coin['thickness'])): ?>
+        <tr><td class="specs-label">Thickness</td><td><?php echo $coin['thickness']; ?> mm</td></tr>
+    <?php endif; ?>
+    <?php if(!empty($coin['mintage'])): ?>
+        <tr><td class="specs-label">Mintage</td><td><?php echo number_format($coin['mintage']); ?></td></tr>
+    <?php endif; ?>
+</table>
                     </table>
                 </div>
+                
 
                 <div class="card" style="margin-top: 20px;">
                     <h3>Who else has it?</h3>

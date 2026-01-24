@@ -577,3 +577,63 @@ input:focus {
   margin-bottom: 20px;
   font-size: 0.9rem;
 }
+
+
+/*navbar*/
+.user-menu {
+    position: relative;
+    display: inline-block;
+    margin-left: 15px;
+}
+
+.settings-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #555;
+    padding: 5px;
+    transition: transform 0.2s;
+}
+
+.settings-btn:hover {
+    transform: rotate(90deg);
+    color: var(--accent-color);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.dropdown-content a, .dropdown-header {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.dropdown-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    font-weight: bold;
+    color: #666;
+    cursor: default;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.user-menu:hover .dropdown-content {
+    display: block;
+}

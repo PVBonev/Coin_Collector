@@ -56,7 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $catalog_coin_id = 0;
 
         if ($is_manual == '1') {
-            //manual entry
+            // 1. СЪЗДАВАНЕ НА НОВА МОНЕТА В КАТАЛОГА (MANUAL ENTRY)
+            
             $new_title = trim($_POST['new_title']);
             $new_denom = trim($_POST['new_denomination']);
             $new_year = (int)$_POST['new_year'];
@@ -65,11 +66,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $period = trim($_POST['period'] ?? '');
             $description = trim($_POST['description'] ?? '');
 
+            // Взимаме новите технически полета (ако са празни, стават NULL)
+            $weight = !empty($_POST['weight']) ? $_POST['weight'] : NULL;
+            $diameter = !empty($_POST['diameter']) ? $_POST['diameter'] : NULL;
+            $mintage = !empty($_POST['mintage']) ? $_POST['mintage'] : NULL;
+
+            // Обновена SQL заявка с новите колони
             $stmtNew = $pdo->prepare("
-        INSERT INTO catalog_coins 
-        (country_id, title, denomination, year, material, period, description, catalog_image_front, catalog_image_back, created_by_user_id, is_approved) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
-    ");
+                INSERT INTO catalog_coins 
+                (country_id, title, denomination, year, material, period, description, 
+                 weight, diameter, mintage,
+                 catalog_image_front, catalog_image_back, created_by_user_id, is_approved) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+            ");
 
             $stmtNew->execute([
                 $country_id,
@@ -78,7 +87,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $new_year,
                 $material,      
                 $period,        
-                $description,   
+                $description,
+                $weight,    // Ново
+                $diameter,  // Ново
+                $mintage,   // Ново
                 $img_front,
                 $img_back,
                 $user_id
@@ -92,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $catalog_coin_id = $_POST['catalog_coin_id'];
         }
 
-        //add to user collection
+        
         $stmtUser = $pdo->prepare("
             INSERT INTO user_coins 
             (user_id, catalog_coin_id, grade, status, own_image_front, own_image_back) 
@@ -112,13 +124,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['success'] = "Coin added successfully!";
         header("Location: ../index.php");
         exit;
+        
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
-        // Log the error for debugging
         $_SESSION['error'] = "Error: " . $e->getMessage();
-        header("Location: ../add_coin.php");
+        
+        if (isset($_POST['is_manual']) && $_POST['is_manual'] == '1') {
+            header("Location: ../create_catalog_coin.php");
+        } else {
+            header("Location: ../add_coin.php");
+        }
         exit;
     }
 }
+?>

@@ -75,6 +75,21 @@ $countries = $stmt->fetchAll();
                     </div>
                 </div>
 
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Weight (g)</label>
+                        <input type="number" step="0.01" name="weight" placeholder="e.g. 24.5">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Diameter (mm)</label>
+                        <input type="number" step="0.01" name="diameter" placeholder="e.g. 37">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Mintage (pcs)</label>
+                        <input type="number" name="mintage" placeholder="e.g. 500000">
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Description / Interesting Facts (Optional)</label>
                     <textarea name="description" rows="3" placeholder="Write something interesting about this coin..."></textarea>
