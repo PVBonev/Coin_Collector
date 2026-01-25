@@ -3,7 +3,6 @@
 session_start();
 require 'config/db.php';
 
-// Ако няма търсене, връщаме назад
 if (!isset($_GET['q']) || empty($_GET['q'])) {
     header("Location: index.php");
     exit;
@@ -12,8 +11,7 @@ if (!isset($_GET['q']) || empty($_GET['q'])) {
 $query = trim($_GET['q']);
 $type = isset($_GET['type']) ? $_GET['type'] : 'coins';
 
-// --- PAGINATION SETTINGS ---
-$limit = 30; // Резултати на страница
+$limit = 30; 
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($page < 1) $page = 1;
 $offset = ($page - 1) * $limit;
@@ -21,33 +19,28 @@ $offset = ($page - 1) * $limit;
 $results = [];
 $total_results = 0;
 
-// ЛОГИКА НА ТЪРСЕНЕТО
 if ($type === 'users') {
-    // 1. Броим общо резултати
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username LIKE ? AND id != ?");
     $countStmt->execute(["%$query%", $_SESSION['user_id'] ?? 0]);
     $total_results = $countStmt->fetchColumn();
 
-    // 2. Взимаме само за текущата страница
-    $sql = "SELECT id, username, created_at FROM users WHERE username LIKE ? AND id != ? LIMIT $limit OFFSET $offset";
+    // ПРОМЯНА ТУК: Добавихме profile_image в SELECT заявката
+    $sql = "SELECT id, username, profile_image, created_at FROM users WHERE username LIKE ? AND id != ? LIMIT $limit OFFSET $offset";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(["%$query%", $_SESSION['user_id'] ?? 0]);
     $results = $stmt->fetchAll();
 
 } elseif ($type === 'countries') {
-    // 1. Броим общо резултати
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM countries WHERE name LIKE ?");
     $countStmt->execute(["%$query%"]);
     $total_results = $countStmt->fetchColumn();
 
-    // 2. Взимаме само за текущата страница
     $sql = "SELECT id, name, flag_image, continent FROM countries WHERE name LIKE ? LIMIT $limit OFFSET $offset";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(["%$query%"]);
     $results = $stmt->fetchAll();
 
 } else {
-    // 1. Броим общо резултати (Catalog Coins)
     $countSql = "SELECT COUNT(*) 
                  FROM catalog_coins cc
                  WHERE cc.title LIKE ? OR cc.denomination LIKE ? OR cc.year LIKE ?";
@@ -56,7 +49,6 @@ if ($type === 'users') {
     $countStmt->execute([$like, $like, $like]);
     $total_results = $countStmt->fetchColumn();
 
-    // 2. Взимаме само за текущата страница
     $sql = "SELECT cc.*, c.name as country_name, c.flag_image 
             FROM catalog_coins cc
             JOIN countries c ON cc.country_id = c.id
@@ -67,7 +59,6 @@ if ($type === 'users') {
     $results = $stmt->fetchAll();
 }
 
-// Изчисляване на общия брой страници
 $total_pages = ceil($total_results / $limit);
 ?>
 
@@ -78,7 +69,6 @@ $total_pages = ceil($total_results / $limit);
     <title>Search Results: <?php echo htmlspecialchars($query); ?></title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <style>
-        /* LIST VIEW STYLES */
         .results-list {
             display: flex;
             flex-direction: column;
@@ -105,13 +95,24 @@ $total_pages = ceil($total_results / $limit);
         }
 
         .row-left { display: flex; align-items: center; gap: 20px; flex: 1; }
+        
         .row-img { width: 50px; height: 50px; object-fit: contain; border-radius: 4px; }
-        .row-img.circle { border-radius: 50%; object-fit: cover; background: #eee; }
+        .row-img.circle { border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
+        
+        /* НОВО: Стил за инициала (кръгче с буква) */
+        .user-initial-circle {
+            width: 50px; height: 50px; border-radius: 50%; 
+            background: #0056b3; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.2rem;
+            text-transform: uppercase;
+            flex-shrink: 0; /* Да не се смачква */
+        }
+
         .row-info h3 { margin: 0; font-size: 1.1rem; color: #333; }
         .row-info p { margin: 5px 0 0 0; font-size: 0.9rem; color: #777; }
         .row-action { margin-left: 20px; }
 
-        /* PAGINATION STYLES */
         .pagination {
             display: flex;
             justify-content: center;
@@ -163,7 +164,17 @@ $total_pages = ceil($total_results / $limit);
                     <?php foreach ($results as $user): ?>
                         <div class="result-row">
                             <div class="row-left">
-                                <img src="assets/images/user-placeholder.png" class="row-img circle" alt="User">
+                                <?php 
+                                    $hasImg = !empty($user['profile_image']) && file_exists($user['profile_image']);
+                                    $initial = strtoupper(substr($user['username'], 0, 1));
+                                ?>
+
+                                <?php if ($hasImg): ?>
+                                    <img src="<?php echo htmlspecialchars($user['profile_image']); ?>" class="row-img circle" alt="User">
+                                <?php else: ?>
+                                    <div class="user-initial-circle"><?php echo $initial; ?></div>
+                                <?php endif; ?>
+
                                 <div class="row-info">
                                     <h3><?php echo htmlspecialchars($user['username']); ?></h3>
                                     <p>Joined: <?php echo date('M Y', strtotime($user['created_at'])); ?></p>
@@ -186,7 +197,7 @@ $total_pages = ceil($total_results / $limit);
                                 </div>
                             </div>
                             <div class="row-action">
-                                <a href="country.php?id=<?php echo $country['id']; ?>" class="btn btn-sm" style="background: #eee; color: #333;">View Coins &rarr;</a>
+                                <a href="country.php?id=<?php echo $country['id']; ?>" class="btn btn-sm" style="background: #d4af37; color: #333;"><strong>View Coins</strong></a>
                             </div>
                         </div>
                     <?php endforeach; ?>

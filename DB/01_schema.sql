@@ -25,12 +25,12 @@ CREATE TABLE IF NOT EXISTS email_confirmations (
 CREATE TABLE IF NOT EXISTS countries (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    iso_code_2 VARCHAR(2) NOT NULL, -- "BG"
-    iso_code_3 VARCHAR(3) NOT NULL, -- "BGR"
+    iso_code_2 VARCHAR(2) NOT NULL,
+    iso_code_3 VARCHAR(3) NOT NULL,
     continent ENUM('Africa', 'Antarctica', 'Asia', 'Europe', 'North America', 'Oceania', 'South America', 'Unknown') DEFAULT 'Unknown',
     flag_image VARCHAR(255) DEFAULT NULL,
     
-    is_historical TINYINT(1) DEFAULT 0 -- 0 = active country, 1 = no longer exists (e.g. USSR)
+    is_historical TINYINT(1) DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS catalog_coins (
@@ -43,11 +43,11 @@ CREATE TABLE IF NOT EXISTS catalog_coins (
     material VARCHAR(100),
     description TEXT,
     
-    weight DECIMAL(10, 2) DEFAULT NULL, -- grams
+    weight DECIMAL(10, 2) DEFAULT NULL,
     diameter DECIMAL(10, 2) DEFAULT NULL, 
     thickness DECIMAL(10, 2) DEFAULT NULL, 
-    shape VARCHAR(50) DEFAULT 'Round', -- round, square, hexagonal...
-    mintage INT DEFAULT NULL, -- hoe many were made
+    shape VARCHAR(50) DEFAULT 'Round',
+    mintage INT DEFAULT NULL,
     
     catalog_image_front VARCHAR(255),
     catalog_image_back VARCHAR(255),
@@ -68,12 +68,14 @@ CREATE TABLE IF NOT EXISTS user_coins (
     grade VARCHAR(50), 
     status ENUM('collection', 'swap', 'sell', 'wishlist') DEFAULT 'collection',
     
-    price DECIMAL(10,2) DEFAULT 0.00, -- price now
+    price DECIMAL(10,2) DEFAULT 0.00,
     purchase_price DECIMAL(10,2) DEFAULT NULL, 
     purchase_date DATE DEFAULT NULL, 
-    purchase_location VARCHAR(100) DEFAULT NULL, -- ebay/friend/shop
+    purchase_location VARCHAR(100) DEFAULT NULL,
     
-    is_favorite TINYINT(1) DEFAULT 0, 
+    is_favorite TINYINT(1) DEFAULT 0,
+    
+    is_locked TINYINT(1) DEFAULT 0,
     
     private_notes TEXT,
     own_image_front VARCHAR(255),
@@ -82,4 +84,39 @@ CREATE TABLE IF NOT EXISTS user_coins (
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (catalog_coin_id) REFERENCES catalog_coins(id) ON DELETE CASCADE
+);
+
+-- swap and sell trades between users
+CREATE TABLE IF NOT EXISTS trades (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,       
+    receiver_id INT NOT NULL,     
+    
+    type ENUM('swap', 'sell') DEFAULT 'swap', 
+    status ENUM('pending', 'accepted', 'declined', 'completed', 'cancelled') DEFAULT 'pending',
+    
+    message TEXT DEFAULT NULL, 
+    
+    sender_confirmed TINYINT(1) DEFAULT 0,    
+    receiver_confirmed TINYINT(1) DEFAULT 0,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- coins involved in each trade
+CREATE TABLE IF NOT EXISTS trade_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    trade_id INT NOT NULL,
+    user_coin_id INT NOT NULL,
+    
+    -- 'offered' =sender coin
+    -- 'requested' = receiver coin
+    type ENUM('offered', 'requested') NOT NULL, 
+    
+    FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_coin_id) REFERENCES user_coins(id) ON DELETE CASCADE
 );
