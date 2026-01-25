@@ -1,8 +1,8 @@
 <?php
+// login.php
 session_start();
 
-if (isset($_SESSION['user_id'])) { // If already logged in redirect to dashboard
-
+if (isset($_SESSION['user_id'])) { 
     header("Location: index.php");
     exit;
 }
@@ -18,8 +18,13 @@ if (isset($_SESSION['user_id'])) { // If already logged in redirect to dashboard
 
 <body>
     <div class="login-wrapper">
-        <div class="login-box">
-            <h2 class="brand" style="margin-bottom: 20px;">Coin Collector</h2>
+        <div class="login-box" style="text-align: center;">
+            
+            <div style="margin-bottom: 15px;">
+                <img src="Logo/logo.svg" alt="Coin Collector Logo" style="width: 100px; height: auto;">
+            </div>
+
+            <h2 class="brand" style="margin-bottom: 20px; margin-top: 0;">Coin Collector</h2>
 
             <?php if (isset($_SESSION['error'])): ?>
                 <div style="color: var(--danger); margin-bottom: 15px; font-weight: bold;">
@@ -66,5 +71,4 @@ if (isset($_SESSION['user_id'])) { // If already logged in redirect to dashboard
         </div>
     </div>
 </body>
-
 </html>

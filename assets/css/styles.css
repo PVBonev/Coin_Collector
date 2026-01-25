@@ -886,10 +886,6 @@ input:focus {
   transition: transform 0.2s;
 }
 
-.settings-btn:hover {
-  transform: rotate(90deg);
-  color: var(--accent-color);
-}
 
 .dropdown-content {
   display: none;
