@@ -1,4 +1,5 @@
 <?php
+// user_coin_details.php
 session_start();
 require 'config/db.php';
 
@@ -24,6 +25,10 @@ $sql = "SELECT
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$user_coin_id, $user_id]);
 $coin = $stmt->fetch();
+
+if (!$coin) {
+    die("Coin not found in your collection.");
+}
 
 $catalog_id = $coin['catalog_coin_id'];
 
@@ -56,10 +61,6 @@ $stmtGrades = $pdo->prepare("
 ");
 $stmtGrades->execute([$catalog_id]);
 $most_common_grade = $stmtGrades->fetch();
-
-if (!$coin) {
-    die("Coin not found in your collection.");
-}
 ?>
 
 <!DOCTYPE html>
@@ -69,6 +70,19 @@ if (!$coin) {
     <meta charset="UTF-8">
     <title>My <?php echo htmlspecialchars($coin['title']); ?></title>
     <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        /* При мобилни устройства връщаме една под друга */
+        @media (max-width: 768px) {
+            .image-hero {
+                flex-direction: column-reverse !important; /* Снимката да отиде отгоре на мобилен */
+                text-align: center !important;
+            }
+            .coin-header-info {
+                text-align: center !important;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -78,34 +92,38 @@ if (!$coin) {
         <a href="index.php" style="color: #666; text-decoration: none; display: inline-block; margin-bottom: 15px;">&larr; Back to Collection</a>
 
         <div class="image-hero">
-            <?php
-            $front = 'assets/images/no-coin.png';
-            if ($coin['own_image_front']) $front = $coin['own_image_front'];
-            elseif ($coin['catalog_image_front']) $front = $coin['catalog_image_front'];
+            
+            <div class="coin-header-info" style="flex: 1; text-align: left; margin: 0;">
+                <h1 class="coin-title" style="margin-bottom: 10px; line-height: 1.2;"><?php echo htmlspecialchars($coin['title']); ?></h1>
+                
+                <div class="coin-subtitle" style="font-size: 1.2rem; color: #555;">
+                    <div style="margin-bottom: 5px; font-weight: bold; color: var(--accent-color);">
+                        <?php echo htmlspecialchars($coin['denomination']); ?>
+                    </div>
+                    <div>
+                        <?php echo htmlspecialchars($coin['country_name']); ?> • <?php echo $coin['year']; ?>
+                    </div>
+                </div>
 
-            $back = 'assets/images/no-coin.png';
-            if ($coin['own_image_back']) $back = $coin['own_image_back'];
-            elseif ($coin['catalog_image_back']) $back = $coin['catalog_image_back'];
-            ?>
-            <img src="<?php echo htmlspecialchars($front); ?>" class="coin-large-img" alt="Front">
-            <img src="<?php echo htmlspecialchars($back); ?>" class="coin-large-img" alt="Back">
-        </div>
-
-        <div class="coin-header-info">
-            <h1 class="coin-title"><?php echo htmlspecialchars($coin['title']); ?></h1>
-            <div class="coin-subtitle">
-                <?php echo htmlspecialchars($coin['country_name']); ?> • <?php echo $coin['year']; ?> • <?php echo htmlspecialchars($coin['denomination']); ?>
+                <?php if($coin['flag_image']): ?>
+                    <img src="<?php echo htmlspecialchars($coin['flag_image']); ?>" style="width: 40px; margin-top: 15px; border: 1px solid #eee; border-radius: 4px;">
+                <?php endif; ?>
             </div>
-        </div>
 
-        <div class="action-bar">
-            <a href="edit_coin.php?id=<?php echo $coin['id']; ?>" class="btn btn-accent" style="min-width: 120px;">
-                Edit Details
-            </a>
+            <div style="flex: 1; display: flex; gap: 20px; justify-content: flex-start; align-items: center;">
+                <?php
+                $front = 'assets/images/no-coin.png';
+                if ($coin['own_image_front']) $front = $coin['own_image_front'];
+                elseif ($coin['catalog_image_front']) $front = $coin['catalog_image_front'];
 
-            <button onclick="openDeleteModal()" class="btn" style="background: #dc3545; color: white; min-width: 120px;">
-                Delete Coin
-            </button>
+                $back = 'assets/images/no-coin.png';
+                if ($coin['own_image_back']) $back = $coin['own_image_back'];
+                elseif ($coin['catalog_image_back']) $back = $coin['catalog_image_back'];
+                ?>
+                <img src="<?php echo htmlspecialchars($front); ?>" class="coin-large-img" alt="Front">
+                <img src="<?php echo htmlspecialchars($back); ?>" class="coin-large-img" alt="Back">
+            </div>
+
         </div>
 
         <div class="details-container">
@@ -207,55 +225,56 @@ if (!$coin) {
                     </div>
                 <?php endif; ?>
 
-                <div class="details-card" style="border-top: 4px solid; color: var(--accent-color);">
-                <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                    Community Stats
-                </h3>
-                
-                <div class="data-row">
-                    <span class="data-label">Total Owners</span>
-                    <span class="data-value" style="font-weight: bold;"><?php echo $total_owners; ?> users</span>
-                </div>
-
-                <div class="data-row">
-                    <span class="data-label">Most Common Grade</span>
-                    <span class="data-value">
-                        <?php echo $most_common_grade ? $most_common_grade['grade'] : 'N/A'; ?>
-                    </span>
-                </div>
-
-                <hr style="margin: 15px 0; border: 0; border-top: 1px dashed #ddd;">
-                <h4 style="margin: 5px 0 10px 0; color: #555;">Market Data</h4>
-
-                <?php if ($market_data['listings_count'] > 0): ?>
+                <div class="details-card" style="border-top: 4px solid; color: var(--accent-color); margin-top: 20px; padding-top: 15px; background: #fff;">
+                    <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                        Community Stats
+                    </h3>
+                    
                     <div class="data-row">
-                        <span class="data-label">Market Price (Avg)</span>
-                        <span class="data-value" style="font-weight: bold;">
-                            <?php echo number_format($market_data['avg_price'], 2); ?> lv.
+                        <span class="data-label">Total Owners</span>
+                        <span class="data-value" style="font-weight: bold;"><?php echo $total_owners; ?> users</span>
+                    </div>
+
+                    <div class="data-row">
+                        <span class="data-label">Most Common Grade</span>
+                        <span class="data-value">
+                            <?php echo $most_common_grade ? $most_common_grade['grade'] : 'N/A'; ?>
                         </span>
                     </div>
-                    <div class="data-row">
-                        <span class="data-label">Price Range</span>
-                        <span class="data-value" style="font-size: 0.9rem;">
-                            <?php echo number_format($market_data['min_price'], 2); ?> - 
-                            <?php echo number_format($market_data['max_price'], 2); ?> lv.
-                        </span>
+
+                    <hr style="margin: 15px 0; border: 0; border-top: 1px dashed #ddd;">
+                    <h4 style="margin: 5px 0 10px 0; color: #555;">Market Data</h4>
+
+                    <?php if ($market_data['listings_count'] > 0): ?>
+                        <div class="data-row">
+                            <span class="data-label">Market Price (Avg)</span>
+                            <span class="data-value" style="font-weight: bold;">
+                                <?php echo number_format($market_data['avg_price'], 2); ?> lv.
+                            </span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Price Range</span>
+                            <span class="data-value" style="font-size: 0.9rem;">
+                                <?php echo number_format($market_data['min_price'], 2); ?> - 
+                                <?php echo number_format($market_data['max_price'], 2); ?> lv.
+                            </span>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.8rem; color: #888; text-align: center;">
+                            Based on <?php echo $market_data['listings_count']; ?> listings currently active.
+                        </div>
+                    <?php else: ?>
+                        <p style="color: #999; font-style: italic; text-align: center;">
+                            No market data available yet.
+                        </p>
+                    <?php endif; ?>
+                    
+                    <div style="margin-top: 20px; text-align: center;">
+                        <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" class="btn" style="background: #d4af37; color: white; padding: 5px 15px; font-size: 0.85rem;">
+                            View All Owners
+                        </a>
                     </div>
-                    <div style="margin-top: 10px; font-size: 0.8rem; color: #888; text-align: center;">
-                        Based on <?php echo $market_data['listings_count']; ?> listings currently active.
-                    </div>
-                <?php else: ?>
-                    <p style="color: #999; font-style: italic; text-align: center;">
-                        No market data available yet.
-                    </p>
-                <?php endif; ?>
-                
-                <div style="margin-top: 20px; text-align: center;">
-                    <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" class="btn" style="background: #d4af37; color: white; padding: 5px 15px; font-size: 0.85rem;">
-                        View All Owners
-                    </a>
                 </div>
-            </div>
+
                 <div style="margin-top: 20px; text-align: center;">
                     <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" style="color: var(--accent-color); font-size: 0.9rem;">
                         View Global Catalog Page &rarr;
@@ -263,6 +282,17 @@ if (!$coin) {
                 </div>
             </div>
         </div>
+
+        <div class="action-bar" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+            <a href="edit_coin.php?id=<?php echo $coin['id']; ?>" class="btn btn-accent" style="min-width: 150px;">
+                &#9998; Edit Details
+            </a>
+
+            <button onclick="openDeleteModal()" class="btn" style="background: #dc3545; color: white; min-width: 150px;">
+                &#128465; Delete Coin
+            </button>
+        </div>
+
     </div>
 
     <div id="deleteModal" class="modal-overlay">
@@ -285,21 +315,9 @@ if (!$coin) {
 
     <script>
         const modal = document.getElementById('deleteModal');
-
-        function openDeleteModal() {
-            modal.style.display = 'flex';
-        }
-
-        function closeDeleteModal() {
-            modal.style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                closeDeleteModal();
-            }
-        }
+        function openDeleteModal() { modal.style.display = 'flex'; }
+        function closeDeleteModal() { modal.style.display = 'none'; }
+        window.onclick = function(event) { if (event.target == modal) closeDeleteModal(); }
     </script>
 </body>
-
 </html>

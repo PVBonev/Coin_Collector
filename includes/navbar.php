@@ -78,7 +78,7 @@
                             Hello, <strong><?php echo htmlspecialchars($navUser['username']); ?></strong>
                         </div>
                         <a href="settings.php">Settings</a> 
-                        <a href="actions/logout.php" style="color: #dc3545;">Logout</a>
+                        <a href="auth/logout_process.php" style="color: #dc3545;">Logout</a>
                     </div>
                 </div>
 

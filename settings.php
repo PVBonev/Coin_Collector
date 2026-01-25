@@ -1,9 +1,7 @@
 <?php
-// settings.php
 session_start();
 require 'config/db.php';
 
-// Проверка за логнат потребител
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
@@ -11,12 +9,21 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Взимаме текущите данни
 $stmt = $pdo->prepare("SELECT username, email, profile_image, bio, location, created_at FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
 if (!$user) die("User not found.");
+
+$avatarUrl = '';
+$hasAvatar = false;
+if (!empty($user['profile_image'])) {
+    if (file_exists($user['profile_image'])) {
+        $avatarUrl = $user['profile_image'];
+        $hasAvatar = true;
+    } 
+}
+$initial = strtoupper(substr($user['username'], 0, 1));
 ?>
 
 <!DOCTYPE html>
@@ -25,110 +32,188 @@ if (!$user) die("User not found.");
     <meta charset="UTF-8">
     <title>Settings - Coin Collector</title>
     <link rel="stylesheet" href="assets/css/styles.css">
-    <style>
-        .settings-container {
-            max-width: 700px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        /* Профилна секция */
-        .profile-preview {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .avatar-large {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--accent-color);
-            background-color: #f0f0f0;
-        }
-
-        .user-meta h2 { margin: 0 0 5px 0; }
-        .user-meta p { margin: 0; color: #777; font-size: 0.9rem; }
-
-        /* Форма */
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; }
-        textarea.form-control { resize: vertical; min-height: 80px; }
-
-        /* File Input Style */
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-        
-        .alert { padding: 15px; border-radius: 4px; margin-bottom: 20px; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    </style>
 </head>
 <body>
     <?php include 'includes/navbar.php'; ?>
 
     <div class="container">
         <div class="settings-container">
-            <h1 style="margin-top: 0;">Account Settings</h1>
+            
+            <div class="settings-header">
+                <h1 style="margin: 0;">Account Settings</h1>
+                <button type="button" id="editProfileBtn" class="btn" style="background: #6c757d; color: white;">
+                    &#9998; Edit Profile
+                </button>
+            </div>
             
             <?php if (isset($_SESSION['success'])): ?>
-                <div class="alert alert-success">
+                <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
                     <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
                 </div>
             <?php endif; ?>
             
             <?php if (isset($_SESSION['error'])): ?>
-                <div class="alert alert-error">
+                <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
                     <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
                 </div>
             <?php endif; ?>
 
-            <form action="actions/update_settings.php" method="POST" enctype="multipart/form-data">
+            <form id="settingsForm" action="actions/update_settings.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="update_profile">
+                <input type="hidden" name="current_password" id="hidden_current_password">
                 
-                <div class="profile-preview">
-                    <?php 
-                        $avatar = !empty($user['profile_image']) ? $user['profile_image'] : 'assets/images/user-placeholder.png';
-                    ?>
-                    <img src="<?php echo htmlspecialchars($avatar); ?>" alt="Avatar" class="avatar-large">
+                <fieldset id="profileFields" disabled style="border: none; padding: 0; margin: 0;">
                     
-                    <div class="user-meta">
-                        <h2><?php echo htmlspecialchars($user['username']); ?></h2>
-                        <p><?php echo htmlspecialchars($user['email']); ?></p>
-                        <p>Member since: <?php echo date('M Y', strtotime($user['created_at'])); ?></p>
+                    <div class="profile-preview">
+                        <?php if ($hasAvatar): ?>
+                            <img src="<?php echo htmlspecialchars($avatarUrl); ?>" class="avatar-large">
+                        <?php else: ?>
+                            <div class="avatar-placeholder"><?php echo $initial; ?></div>
+                        <?php endif; ?>
                         
-                        <div style="margin-top: 10px;">
-                            <label style="font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 5px;">Change Photo:</label>
-                            <input type="file" name="profile_pic" accept="image/*">
+                        <div class="user-meta">
+                            <h2><?php echo htmlspecialchars($user['username']); ?></h2>
+                            <p>Member since: <?php echo date('F j, Y', strtotime($user['created_at'])); ?> </p>
+                            
+                            <div class="edit-only" style="margin-top: 10px;">
+                                <label style="font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 5px;">Change Photo:</label>
+                                <input type="file" name="profile_pic" accept="image/*">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label>Location</label>
-                    <input type="text" name="location" class="form-control" 
-                           value="<?php echo htmlspecialchars($user['location'] ?? ''); ?>" 
-                           placeholder="e.g. Sofia, Bulgaria">
-                </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" name="email" id="emailInput" class="form-control" 
+                               value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                    </div>
 
-                <div class="form-group">
-                    <label>Bio / About Me</label>
-                    <textarea name="bio" class="form-control" placeholder="Tell other collectors about your interests..."><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
-                </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" name="location" class="form-control" 
+                               value="<?php echo htmlspecialchars($user['location'] ?? ''); ?>" placeholder="Not set">
+                    </div>
 
-                <button type="submit" class="btn btn-accent" style="width: 100%; padding: 12px; font-size: 1rem;">Save Changes</button>
+                    <div class="form-group">
+                        <label>Bio</label>
+                        <textarea name="bio" class="form-control" placeholder="Not set"><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
+                    </div>
+
+                    <div class="edit-only">
+                        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+                        
+                        <h3 style="margin-top: 0; color: #555;">Change Password</h3>
+                        <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">Leave blank if you don't want to change it.</p>
+
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" name="new_password" id="newPassInput" class="form-control" placeholder="New password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" name="confirm_password" class="form-control" placeholder="Confirm new password">
+                        </div>
+                    </div>
+
+                </fieldset>
+
+                <div id="actionButtons" class="edit-only" style="margin-top: 20px; gap: 10px; display: none;">
+                    <button type="button" onclick="cancelEdit()" class="btn" style="background: #ccc; color: #333; flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-accent" style="flex: 2;">Save Changes</button>
+                </div>
             </form>
+
+            <div class="danger-zone">
+                <button onclick="openDeleteModal()" class="btn-delete">Delete Account</button>
+            </div>
         </div>
     </div>
+
+    <div id="verifyModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 style="margin-top: 0; color: #333;">Security Check</h2>
+            <p>You are changing sensitive information.</p>
+            <p>Please enter your <strong>Current Password</strong> to confirm.</p>
+            <input type="password" id="verify_pass_input" class="form-control" style="margin-bottom: 15px;" placeholder="Current Password">
+            <div class="modal-buttons">
+                <button onclick="closeVerifyModal()" class="btn" style="background: #ccc; color: #333;">Cancel</button>
+                <button onclick="confirmVerify()" class="btn btn-accent">Confirm & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 style="margin-top: 0; color: #dc3545;">Delete Account?</h2>
+            <p>Are you sure? This will delete all your coins and data.</p>
+            <div class="modal-buttons">
+                <button onclick="closeDeleteModal()" class="btn" style="background: #ccc; color: #333;">Cancel</button>
+                <form action="actions/update_settings.php" method="POST">
+                    <input type="hidden" name="action" value="delete_account">
+                    <button type="submit" class="btn" style="background: #dc3545; color: white;">Yes, Delete It</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const initialEmail = "<?php echo $user['email']; ?>";
+        const form = document.getElementById('settingsForm');
+        const verifyModal = document.getElementById('verifyModal');
+        const deleteModal = document.getElementById('deleteModal');
+        const verifyInput = document.getElementById('verify_pass_input');
+        const hiddenPass = document.getElementById('hidden_current_password');
+
+        const fieldset = document.getElementById('profileFields');
+        const editBtn = document.getElementById('editProfileBtn');
+        const actionButtons = document.getElementById('actionButtons');
+        const editOnlyElements = document.querySelectorAll('.edit-only');
+
+        editBtn.addEventListener('click', function() {
+            fieldset.disabled = false; 
+            editBtn.style.display = 'none'; 
+            
+            actionButtons.style.display = 'flex';
+            editOnlyElements.forEach(el => el.style.display = 'block');
+        });
+
+        function cancelEdit() {
+            location.reload(); 
+        }
+
+        form.addEventListener('submit', function(e) {
+            const newEmail = document.getElementById('emailInput').value;
+            const newPass = document.getElementById('newPassInput').value;
+
+            if ((newEmail !== initialEmail || newPass !== "") && hiddenPass.value === "") {
+                e.preventDefault();
+                verifyModal.style.display = 'flex';
+                verifyInput.focus();
+            }
+        });
+
+        function confirmVerify() {
+            if (verifyInput.value === "") {
+                alert("Please enter your current password.");
+                return;
+            }
+            hiddenPass.value = verifyInput.value;
+            form.submit();
+        }
+
+        function closeVerifyModal() {
+            verifyModal.style.display = 'none';
+            verifyInput.value = "";
+        }
+
+        function openDeleteModal() { deleteModal.style.display = 'flex'; }
+        function closeDeleteModal() { deleteModal.style.display = 'none'; }
+
+        window.onclick = function(event) {
+            if (event.target == verifyModal) closeVerifyModal();
+            if (event.target == deleteModal) closeDeleteModal();
+        }
+    </script>
 </body>
 </html>
