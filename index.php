@@ -14,6 +14,7 @@ $sqlCoins = "SELECT
             uc.id AS collection_id,
             uc.grade,
             uc.status,
+            uc.is_locked,        /* <--- ТОВА ЛИПСВАШЕ */
             uc.own_image_front,  
             cc.title,
             cc.year,
@@ -57,9 +58,9 @@ $stmtStatus->execute([$user_id]);
 $status_data = $stmtStatus->fetchAll(PDO::FETCH_KEY_PAIR);
 
 $status_colors = [
-    'collection' => '#28a745', 
-    'swap'       => '#ffc107', 
-    'sell'       => '#dc3545', 
+    'collection' => '#28a745',
+    'swap'       => '#ffc107',
+    'sell'       => '#dc3545',
     'wishlist'   => '#17a2b8'
 ];
 
@@ -109,18 +110,23 @@ $top_periods = $stmtPeriods->fetchAll();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Dashboard - Coin Collector</title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <style>
         .pie-chart {
-            width: 160px; height: 160px; border-radius: 50%;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
             background: conic-gradient(<?php echo $pie_gradient; ?>);
-            position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
+
 <body>
     <?php include 'includes/navbar.php'; ?>
 
@@ -146,7 +152,8 @@ $top_periods = $stmtPeriods->fetchAll();
 
         <?php if (isset($_SESSION['success'])): ?>
             <div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-                <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
+                <?php echo $_SESSION['success'];
+                unset($_SESSION['success']); ?>
             </div>
         <?php endif; ?>
 
@@ -156,11 +163,17 @@ $top_periods = $stmtPeriods->fetchAll();
             <?php if (count($my_coins) > 0): ?>
                 <div class="collection-grid">
                     <?php foreach ($my_coins as $coin): ?>
-                        <a href="user_coin_details.php?id=<?php echo $coin['collection_id']; ?>" style="text-decoration: none; color: inherit;">
-                            <div class="coin-card">
+
+                        <div class="coin-card <?php echo $coin['is_locked'] ? 'locked' : ''; ?>">
+
+                            <?php if ($coin['is_locked']): ?>
+                                <div class="lock-overlay">&#128274;</div>
+                            <?php endif; ?>
+
+                            <a href="user_coin_details.php?id=<?php echo $coin['collection_id']; ?>" style="text-decoration: none; color: inherit; display: block;">
                                 <div class="coin-img-box">
                                     <?php
-                                    $displayImage = 'assets/images/no-coin.png'; 
+                                    $displayImage = 'assets/images/no-coin.png';
                                     if (!empty($coin['own_image_front'])) {
                                         $displayImage = $coin['own_image_front'];
                                     } elseif (!empty($coin['catalog_image_front'])) {
@@ -169,44 +182,53 @@ $top_periods = $stmtPeriods->fetchAll();
                                     ?>
                                     <img src="<?php echo htmlspecialchars($displayImage); ?>" alt="Coin Image">
                                 </div>
+                            </a>
 
-                                <div class="coin-details">
-                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div class="coin-details">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <a href="user_coin_details.php?id=<?php echo $coin['collection_id']; ?>" style="text-decoration: none; color: inherit;">
                                         <h3 style="margin: 0; font-size: 1.1rem;"><?php echo htmlspecialchars($coin['title']); ?></h3>
-                                        <?php if ($coin['flag_image']): ?>
-                                            <img src="<?php echo htmlspecialchars($coin['flag_image']); ?>" style="width: 25px; border: 1px solid #eee;">
+                                    </a>
+
+                                    <?php if ($coin['flag_image']): ?>
+                                        <img src="<?php echo htmlspecialchars($coin['flag_image']); ?>" style="width: 25px; border: 1px solid #eee;">
+                                    <?php endif; ?>
+                                </div>
+
+                                <p style="color: #666; font-size: 0.9rem; margin: 5px 0;">
+                                    <?php echo htmlspecialchars($coin['country_name']); ?> • <?php echo $coin['year']; ?>
+                                </p>
+
+                                <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: bold; font-size: 0.9rem;">
+                                        <?php echo htmlspecialchars($coin['denomination']); ?>
+                                    </span>
+
+                                    <div>
+                                        <?php if ($coin['status'] !== 'collection'): ?>
+                                            <span class="badge status-badge"><?php echo ucfirst($coin['status']); ?></span>
                                         <?php endif; ?>
-                                    </div>
 
-                                    <p style="color: #666; font-size: 0.9rem; margin: 5px 0;">
-                                        <?php echo htmlspecialchars($coin['country_name']); ?> • <?php echo $coin['year']; ?>
-                                    </p>
+                                        <?php
+                                        $g = trim($coin['grade']);
+                                        $gradeClass = 'grade-default';
+                                        if ($g == 'UNC') $gradeClass = 'grade-unc';
+                                        if ($g == 'AU')  $gradeClass = 'grade-au';
+                                        if ($g == 'XF')  $gradeClass = 'grade-xf';
+                                        if ($g == 'VF')  $gradeClass = 'grade-vf';
+                                        if ($g == 'F')   $gradeClass = 'grade-f';
+                                        ?>
 
-                                    <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-weight: bold; font-size: 0.9rem;">
-                                            <?php echo htmlspecialchars($coin['denomination']); ?>
-                                        </span>
-
-                                        <div>
-                                            <?php if ($coin['status'] !== 'collection'): ?>
-                                                <span class="badge status-badge"><?php echo ucfirst($coin['status']); ?></span>
-                                            <?php endif; ?>
-
-                                            <?php
-                                            $g = trim($coin['grade']);
-                                            $gradeClass = 'grade-default'; 
-                                            if ($g == 'UNC') $gradeClass = 'grade-unc'; 
-                                            if ($g == 'AU')  $gradeClass = 'grade-au';  
-                                            if ($g == 'XF')  $gradeClass = 'grade-xf';  
-                                            if ($g == 'VF')  $gradeClass = 'grade-vf';  
-                                            if ($g == 'F')   $gradeClass = 'grade-f';   
-                                            ?>
-                                            <span class="badge <?php echo $gradeClass; ?>"><?php echo htmlspecialchars($coin['grade']); ?></span>
-                                        </div>
+                                        <a href="grading_guide.php" title="See Grading Guide" style="text-decoration: none;">
+                                            <span class="badge <?php echo $gradeClass; ?>" style="cursor: help;">
+                                                <?php echo htmlspecialchars($coin['grade']); ?>
+                                            </span>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-                        </a> 
+                        </div>
+
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
@@ -243,18 +265,18 @@ $top_periods = $stmtPeriods->fetchAll();
                 <div class="chart-container">
                     <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Collection Status</h3>
                     <?php if ($total_coins > 0): ?>
-                    <div class="pie-wrapper">
-                        <div class="pie-chart"></div>
-                        <ul class="legend">
-                            <?php foreach ($chart_legend as $item): ?>
-                                <li>
-                                    <span class="legend-color" style="background: <?php echo $item['color']; ?>"></span>
-                                    <strong><?php echo $item['label']; ?></strong>: 
-                                    <?php echo $item['count']; ?> (<?php echo $item['percent']; ?>%)
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
+                        <div class="pie-wrapper">
+                            <div class="pie-chart"></div>
+                            <ul class="legend">
+                                <?php foreach ($chart_legend as $item): ?>
+                                    <li>
+                                        <span class="legend-color" style="background: <?php echo $item['color']; ?>"></span>
+                                        <strong><?php echo $item['label']; ?></strong>:
+                                        <?php echo $item['count']; ?> (<?php echo $item['percent']; ?>%)
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
                     <?php else: ?>
                         <p style="text-align: center; color: #999;">No data.</p>
                     <?php endif; ?>
@@ -268,12 +290,14 @@ $top_periods = $stmtPeriods->fetchAll();
                             <?php $width = ($country['count'] / $max_count) * 100; ?>
                             <div class="bar-row">
                                 <div class="bar-label">
-                                    <?php if($country['flag_image']): ?>
+                                    <?php if ($country['flag_image']): ?>
                                         <img src="<?php echo htmlspecialchars($country['flag_image']); ?>" width="20" style="border-radius: 2px;">
                                     <?php endif; ?>
                                     <?php echo htmlspecialchars($country['name']); ?>
                                 </div>
-                                <div class="bar-track"><div class="bar-fill" style="width: <?php echo $width; ?>%;"></div></div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="width: <?php echo $width; ?>%;"></div>
+                                </div>
                                 <div class="bar-value"><?php echo $country['count']; ?></div>
                             </div>
                         <?php endforeach; ?>
@@ -293,7 +317,9 @@ $top_periods = $stmtPeriods->fetchAll();
                             <div class="bar-label" style="width: 250px;">
                                 <?php echo htmlspecialchars($p['period'] ? $p['period'] : 'Unknown'); ?>
                             </div>
-                            <div class="bar-track"><div class="bar-fill" style="width: <?php echo $width; ?>%; background: #6c757d;"></div></div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: <?php echo $width; ?>%; background: #6c757d;"></div>
+                            </div>
                             <div class="bar-value"><?php echo $p['count']; ?></div>
                         </div>
                     <?php endforeach; ?>
@@ -309,18 +335,19 @@ $top_periods = $stmtPeriods->fetchAll();
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
-            if(tabName === 'collection') {
+            if (tabName === 'collection') {
                 document.getElementById('tab-collection').classList.add('active');
-                document.getElementById('collection-actions').style.display = 'block'; 
+                document.getElementById('collection-actions').style.display = 'block';
             } else {
                 document.getElementById('tab-stats').classList.add('active');
                 document.getElementById('collection-actions').style.display = 'none';
             }
-            
+
             const buttons = document.querySelectorAll('.tab-btn');
-            if(tabName === 'collection') buttons[0].classList.add('active');
+            if (tabName === 'collection') buttons[0].classList.add('active');
             else buttons[1].classList.add('active');
         }
     </script>
 </body>
+
 </html>

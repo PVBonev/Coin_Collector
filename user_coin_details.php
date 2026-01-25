@@ -78,10 +78,10 @@ $most_common_grade = $stmtGrades->fetch();
         <a href="index.php" style="color: #666; text-decoration: none; display: inline-block; margin-bottom: 15px;">&larr; Back to Collection</a>
 
         <div class="image-hero">
-            
+
             <div class="coin-header-info" style="flex: 1; text-align: left; margin: 0;">
                 <h1 class="coin-title" style="margin-bottom: 10px; line-height: 1.2;"><?php echo htmlspecialchars($coin['title']); ?></h1>
-                
+
                 <div class="coin-subtitle" style="font-size: 1.2rem; color: #555;">
                     <div style="margin-bottom: 5px; font-weight: bold; color: var(--accent-color);">
                         <?php echo htmlspecialchars($coin['denomination']); ?>
@@ -91,7 +91,7 @@ $most_common_grade = $stmtGrades->fetch();
                     </div>
                 </div>
 
-                <?php if($coin['flag_image']): ?>
+                <?php if ($coin['flag_image']): ?>
                     <img src="<?php echo htmlspecialchars($coin['flag_image']); ?>" style="width: 40px; margin-top: 15px; border: 1px solid #eee; border-radius: 4px;">
                 <?php endif; ?>
             </div>
@@ -119,10 +119,14 @@ $most_common_grade = $stmtGrades->fetch();
                 <div class="data-row">
                     <span class="data-label">Grade / Condition</span>
                     <span class="data-value" style="font-weight: bold; background: #eee; padding: 2px 8px; border-radius: 4px;">
-                        <?php echo htmlspecialchars($coin['grade']); ?>
+
+                        <a href="grading_guide.php" style="color: inherit; text-decoration: none; border-bottom: 1px dashed #999;" title="View Grading Scale">
+                            <?php echo htmlspecialchars($coin['grade']); ?>
+                        </a>
+
                     </span>
                 </div>
-                
+
                 <div class="data-row">
                     <span class="data-label">Current Value</span>
                     <span class="data-value" style="color: var(--accent-color); font-weight: bold;">
@@ -130,25 +134,25 @@ $most_common_grade = $stmtGrades->fetch();
                     </span>
                 </div>
 
-                <?php if($coin['purchase_price'] > 0): ?>
-                <div class="data-row">
-                    <span class="data-label">Paid Price</span>
-                    <span class="data-value"><?php echo number_format($coin['purchase_price'], 2); ?> lv.</span>
-                </div>
+                <?php if ($coin['purchase_price'] > 0): ?>
+                    <div class="data-row">
+                        <span class="data-label">Paid Price</span>
+                        <span class="data-value"><?php echo number_format($coin['purchase_price'], 2); ?> lv.</span>
+                    </div>
                 <?php endif; ?>
 
-                <?php if($coin['purchase_location']): ?>
-                <div class="data-row">
-                    <span class="data-label">Acquired From</span>
-                    <span class="data-value"><?php echo htmlspecialchars($coin['purchase_location']); ?></span>
-                </div>
+                <?php if ($coin['purchase_location']): ?>
+                    <div class="data-row">
+                        <span class="data-label">Acquired From</span>
+                        <span class="data-value"><?php echo htmlspecialchars($coin['purchase_location']); ?></span>
+                    </div>
                 <?php endif; ?>
 
-                <?php if($coin['purchase_date']): ?>
-                <div class="data-row">
-                    <span class="data-label">Date Acquired</span>
-                    <span class="data-value"><?php echo date('d M Y', strtotime($coin['purchase_date'])); ?></span>
-                </div>
+                <?php if ($coin['purchase_date']): ?>
+                    <div class="data-row">
+                        <span class="data-label">Date Acquired</span>
+                        <span class="data-value"><?php echo date('d M Y', strtotime($coin['purchase_date'])); ?></span>
+                    </div>
                 <?php endif; ?>
                 <div class="data-row">
                     <span class="data-label">Status</span>
@@ -183,28 +187,28 @@ $most_common_grade = $stmtGrades->fetch();
                     <span class="data-value"><?php echo htmlspecialchars($coin['period']); ?></span>
                 </div>
 
-                <?php if($coin['weight']): ?>
+                <?php if ($coin['weight']): ?>
                     <div class="data-row">
                         <span class="data-label">Weight</span>
                         <span class="data-value"><?php echo $coin['weight']; ?> g</span>
                     </div>
                 <?php endif; ?>
 
-                <?php if($coin['diameter']): ?>
+                <?php if ($coin['diameter']): ?>
                     <div class="data-row">
                         <span class="data-label">Diameter</span>
                         <span class="data-value"><?php echo $coin['diameter']; ?> mm</span>
                     </div>
                 <?php endif; ?>
 
-                <?php if($coin['thickness']): ?>
+                <?php if ($coin['thickness']): ?>
                     <div class="data-row">
                         <span class="data-label">Thickness</span>
                         <span class="data-value"><?php echo $coin['thickness']; ?> mm</span>
                     </div>
                 <?php endif; ?>
 
-                <?php if($coin['mintage']): ?>
+                <?php if ($coin['mintage']): ?>
                     <div class="data-row">
                         <span class="data-label">Mintage</span>
                         <span class="data-value"><?php echo number_format($coin['mintage']); ?></span>
@@ -215,7 +219,7 @@ $most_common_grade = $stmtGrades->fetch();
                     <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                         Community Stats
                     </h3>
-                    
+
                     <div class="data-row">
                         <span class="data-label">Total Owners</span>
                         <span class="data-value" style="font-weight: bold;"><?php echo $total_owners; ?> users</span>
@@ -241,7 +245,7 @@ $most_common_grade = $stmtGrades->fetch();
                         <div class="data-row">
                             <span class="data-label">Price Range</span>
                             <span class="data-value" style="font-size: 0.9rem;">
-                                <?php echo number_format($market_data['min_price'], 2); ?> - 
+                                <?php echo number_format($market_data['min_price'], 2); ?> -
                                 <?php echo number_format($market_data['max_price'], 2); ?> lv.
                             </span>
                         </div>
@@ -253,7 +257,7 @@ $most_common_grade = $stmtGrades->fetch();
                             No market data available yet.
                         </p>
                     <?php endif; ?>
-                    
+
                     <div style="margin-top: 20px; text-align: center;">
                         <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" class="btn" style="background: #d4af37; color: white; padding: 5px 15px; font-size: 0.85rem;">
                             View All Owners
@@ -269,15 +273,27 @@ $most_common_grade = $stmtGrades->fetch();
             </div>
         </div>
 
-        <div class="action-bar" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
-            <a href="edit_coin.php?id=<?php echo $coin['id']; ?>" class="btn btn-accent" style="min-width: 150px;">
-                &#9998; Edit Details
-            </a>
+        <?php if (isset($coin['is_locked']) && $coin['is_locked'] == 1): ?>
 
-            <button onclick="openDeleteModal()" class="btn" style="background: #dc3545; color: white; min-width: 150px;">
-                &#128465; Delete Coin
-            </button>
-        </div>
+            <div class="locked-alert" style="margin-top: 40px;">
+                <strong>&#128274; Coin Locked</strong><br>
+                This coin is currently part of an active trade request.<br>
+                You cannot edit or delete it until the trade is completed or cancelled.
+            </div>
+
+        <?php else: ?>
+
+            <div class="action-bar" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+                <a href="edit_coin.php?id=<?php echo $coin['id']; ?>" class="btn btn-accent" style="min-width: 150px;">
+                    &#9998; Edit Details
+                </a>
+
+                <button onclick="openDeleteModal()" class="btn" style="background: #dc3545; color: white; min-width: 150px;">
+                    &#128465; Delete Coin
+                </button>
+            </div>
+
+        <?php endif; ?>
 
     </div>
 
@@ -301,9 +317,18 @@ $most_common_grade = $stmtGrades->fetch();
 
     <script>
         const modal = document.getElementById('deleteModal');
-        function openDeleteModal() { modal.style.display = 'flex'; }
-        function closeDeleteModal() { modal.style.display = 'none'; }
-        window.onclick = function(event) { if (event.target == modal) closeDeleteModal(); }
+
+        function openDeleteModal() {
+            modal.style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            modal.style.display = 'none';
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) closeDeleteModal();
+        }
     </script>
 </body>
+
 </html>

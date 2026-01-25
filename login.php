@@ -1,10 +1,10 @@
 <?php
 session_start();
 
-if (isset($_SESSION['user_id'])) { 
-    header("Location: index.php");
-    exit;
-}
+//if (isset($_SESSION['user_id'])) { //so we can log in with multiple user profiles from the samebrowser. This is for demo purposes only.
+//    header("Location: index.php");
+//    exit;
+//}
 ?>
 <!DOCTYPE html>
 <html lang="en">

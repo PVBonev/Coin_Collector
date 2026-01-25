@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header("Location: ../countries.php");
             exit;
         } catch (PDOException $e) {
-            $_SESSION['error'] = "Error deleting account.";
+            $_SESSION['error'] = "Could not delete account: " . $e->getMessage();
             header("Location: ../settings.php");
             exit;
         }
@@ -31,94 +31,62 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $location = trim($_POST['location']);
         $bio = trim($_POST['bio']);
         
-        $current_pass_input = $_POST['current_password'] ?? '';
-        $new_pass = $_POST['new_password'] ?? '';
-        $confirm_pass = $_POST['confirm_password'] ?? '';
-
-        $stmtUser = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-        $stmtUser->execute([$user_id]);
-        $currentUser = $stmtUser->fetch();
-
-        $sensitive_change = false;
-
-        if ($email !== $currentUser['email']) {
-            $sensitive_change = true;
-            $check = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
-            $check->execute([$email, $user_id]);
-            if ($check->rowCount() > 0) {
-                $_SESSION['error'] = "Email already taken.";
-                header("Location: ../settings.php");
-                exit;
-            }
+        $checkEmail = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+        $checkEmail->execute([$email, $user_id]);
+        if ($checkEmail->rowCount() > 0) {
+            $_SESSION['error'] = "This email is already taken.";
+            header("Location: ../settings.php");
+            exit;
         }
 
-        if (!empty($new_pass)) {
-            $sensitive_change = true;
-            if ($new_pass !== $confirm_pass) {
-                $_SESSION['error'] = "New passwords do not match.";
-                header("Location: ../settings.php");
-                exit;
-            }
-            if (strlen($new_pass) < 6) {
-                $_SESSION['error'] = "Password too short (min 6 chars).";
-                header("Location: ../settings.php");
-                exit;
-            }
-        }
-
-        if ($sensitive_change) {
-            if (empty($current_pass_input)) {
-                $_SESSION['error'] = "Current password is required for security changes.";
-                header("Location: ../settings.php");
-                exit;
-            }
-            if (!password_verify($current_pass_input, $currentUser['password'])) {
-                $_SESSION['error'] = "Incorrect current password!";
-                header("Location: ../settings.php");
-                exit;
-            }
-        }
-
-        $targetDir = '../uploads/user_prof_pics/';
-        if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
         $imagePath = null;
         
         if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === UPLOAD_ERR_OK) {
+            
+            $targetDir = '../uploads/user_prof_pics/';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+
             $file = $_FILES['profile_pic'];
             $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-                $filename = 'user_' . $user_id . '_' . time() . '.' . $ext;
-                if (move_uploaded_file($file['tmp_name'], $targetDir . $filename)) {
-                    $imagePath = 'uploads/user_prof_pics/' . $filename;
+            $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+
+            if (in_array($ext, $allowed)) {
+                if ($file['size'] <= 5 * 1024 * 1024) { // Max 5MB
+                    $filename = 'user_' . $user_id . '_' . time() . '.' . $ext;
+                    $targetFile = $targetDir . $filename;
+
+                    if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                        $imagePath = 'uploads/user_prof_pics/' . $filename;
+                    } else {
+                        $_SESSION['error'] = "Failed to move uploaded file. Check folder permissions.";
+                    }
+                } else {
+                    $_SESSION['error'] = "Image size too large (Max 5MB).";
                 }
+            } else {
+                $_SESSION['error'] = "Invalid file format. Only JPG, PNG, WEBP allowed.";
             }
         }
 
-        //save to base
         try {
-            $finalPasswordHash = $currentUser['password'];
-            if (!empty($new_pass)) {
-                $finalPasswordHash = password_hash($new_pass, PASSWORD_DEFAULT);
-            }
-
-            $sql = "UPDATE users SET email=?, location=?, bio=?, password=? ";
-            $params = [$email, $location, $bio, $finalPasswordHash];
-
             if ($imagePath) {
-                $sql .= ", profile_image=? ";
-                $params[] = $imagePath;
+                $sql = "UPDATE users SET email = ?, location = ?, bio = ?, profile_image = ? WHERE id = ?";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([$email, $location, $bio, $imagePath, $user_id]);
+            } else {
+                $sql = "UPDATE users SET email = ?, location = ?, bio = ? WHERE id = ?";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([$email, $location, $bio, $user_id]);
             }
-
-            $sql .= "WHERE id=?";
-            $params[] = $user_id;
-
-            $stmtUpdate = $pdo->prepare($sql);
-            $stmtUpdate->execute($params);
-
-            $_SESSION['success'] = "Profile updated successfully!";
+            
+            if (!isset($_SESSION['error'])) {
+                $_SESSION['success'] = "Profile updated successfully!";
+            }
 
         } catch (PDOException $e) {
-            $_SESSION['error'] = "DB Error: " . $e->getMessage();
+            $_SESSION['error'] = "Database error: " . $e->getMessage();
         }
 
         header("Location: ../settings.php");

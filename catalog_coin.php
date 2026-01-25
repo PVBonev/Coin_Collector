@@ -71,7 +71,7 @@ $for_sale = $availability['sell'] ?? 0;
 $for_swap = $availability['swap'] ?? 0;
 
 $stmtUsers = $pdo->prepare("
-    SELECT uc.grade, uc.status, uc.added_at, u.username, u.profile_image, u.id as owner_id
+    SELECT uc.id as user_coin_id, uc.grade, uc.status, uc.added_at, u.username, u.profile_image, u.id as owner_id
     FROM user_coins uc
     JOIN users u ON uc.user_id = u.id
     WHERE uc.catalog_coin_id = ? AND uc.user_id != ?
@@ -84,21 +84,23 @@ $owners = $stmtUsers->fetchAll();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($coin['title']); ?> - Details</title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <style>
-        
+
     </style>
 </head>
+
 <body>
     <?php include 'includes/navbar.php'; ?>
 
     <div class="container">
         <p style="font-size: 0.9rem;">
-            <a href="countries.php" style="color: #666;">Countries</a> &gt; 
-            <a href="country.php?id=<?php echo $coin['country_id']; ?>" style="color: #666;"><?php echo htmlspecialchars($coin['country_name']); ?></a> &gt; 
+            <a href="countries.php" style="color: #666;">Countries</a> &gt;
+            <a href="country.php?id=<?php echo $coin['country_id']; ?>" style="color: #666;"><?php echo htmlspecialchars($coin['country_name']); ?></a> &gt;
             Details
         </p>
 
@@ -107,7 +109,7 @@ $owners = $stmtUsers->fetchAll();
                 <h1 style="margin: 0;"><?php echo htmlspecialchars($coin['title']); ?></h1>
                 <h3 style="margin: 5px 0; color: var(--accent-color);"><?php echo htmlspecialchars($coin['denomination']); ?> • <?php echo $coin['year']; ?></h3>
             </div>
-            
+
             <div>
                 <?php if ($my_copy): ?>
                     <a href="user_coin_details.php?id=<?php echo $my_copy['id']; ?>" class="btnblk" style="background: #d4af37;"> View Your Coin</a>
@@ -118,17 +120,17 @@ $owners = $stmtUsers->fetchAll();
         </div>
 
         <div class="details-grid">
-            
+
             <div>
                 <div class="images-container">
-                    <?php 
-                        $front = $coin['catalog_image_front'] ? $coin['catalog_image_front'] : 'assets/images/no-coin.png';
-                        $back = $coin['catalog_image_back'] ? $coin['catalog_image_back'] : 'assets/images/no-coin.png';
+                    <?php
+                    $front = $coin['catalog_image_front'] ? $coin['catalog_image_front'] : 'assets/images/no-coin.png';
+                    $back = $coin['catalog_image_back'] ? $coin['catalog_image_back'] : 'assets/images/no-coin.png';
                     ?>
                     <img src="<?php echo htmlspecialchars($front); ?>" class="coin-large-img" alt="Front">
                     <img src="<?php echo htmlspecialchars($back); ?>" class="coin-large-img" alt="Back">
                 </div>
-                
+
                 <?php if ($coin['description']): ?>
                     <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 8px; line-height: 1.6; border: 1px solid #eee;">
                         <strong>Description:</strong><br>
@@ -139,23 +141,50 @@ $owners = $stmtUsers->fetchAll();
                 <div class="card" style="margin-top: 20px;">
                     <h3>Specifications</h3>
                     <table class="specs-table">
-                        <tr><td class="specs-label">Country</td><td><?php echo htmlspecialchars($coin['country_name']); ?></td></tr>
-                        <tr><td class="specs-label">Year</td><td><?php echo $coin['year']; ?></td></tr>
-                        <tr><td class="specs-label">Value</td><td><?php echo htmlspecialchars($coin['denomination']); ?></td></tr>
-                        <tr><td class="specs-label">Material</td><td><?php echo htmlspecialchars($coin['material'] ?? 'Unknown'); ?></td></tr>
-                        <tr><td class="specs-label">Period</td><td><?php echo htmlspecialchars($coin['period'] ?? 'Unknown'); ?></td></tr>
-                        
-                        <?php if(!empty($coin['weight'])): ?>
-                            <tr><td class="specs-label">Weight</td><td><?php echo $coin['weight']; ?> g</td></tr>
+                        <tr>
+                            <td class="specs-label">Country</td>
+                            <td><?php echo htmlspecialchars($coin['country_name']); ?></td>
+                        </tr>
+                        <tr>
+                            <td class="specs-label">Year</td>
+                            <td><?php echo $coin['year']; ?></td>
+                        </tr>
+                        <tr>
+                            <td class="specs-label">Value</td>
+                            <td><?php echo htmlspecialchars($coin['denomination']); ?></td>
+                        </tr>
+                        <tr>
+                            <td class="specs-label">Material</td>
+                            <td><?php echo htmlspecialchars($coin['material'] ?? 'Unknown'); ?></td>
+                        </tr>
+                        <tr>
+                            <td class="specs-label">Period</td>
+                            <td><?php echo htmlspecialchars($coin['period'] ?? 'Unknown'); ?></td>
+                        </tr>
+
+                        <?php if (!empty($coin['weight'])): ?>
+                            <tr>
+                                <td class="specs-label">Weight</td>
+                                <td><?php echo $coin['weight']; ?> g</td>
+                            </tr>
                         <?php endif; ?>
-                        <?php if(!empty($coin['diameter'])): ?>
-                            <tr><td class="specs-label">Diameter</td><td><?php echo $coin['diameter']; ?> mm</td></tr>
+                        <?php if (!empty($coin['diameter'])): ?>
+                            <tr>
+                                <td class="specs-label">Diameter</td>
+                                <td><?php echo $coin['diameter']; ?> mm</td>
+                            </tr>
                         <?php endif; ?>
-                        <?php if(!empty($coin['thickness'])): ?>
-                            <tr><td class="specs-label">Thickness</td><td><?php echo $coin['thickness']; ?> mm</td></tr>
+                        <?php if (!empty($coin['thickness'])): ?>
+                            <tr>
+                                <td class="specs-label">Thickness</td>
+                                <td><?php echo $coin['thickness']; ?> mm</td>
+                            </tr>
                         <?php endif; ?>
-                        <?php if(!empty($coin['mintage'])): ?>
-                            <tr><td class="specs-label">Mintage</td><td><?php echo number_format($coin['mintage']); ?></td></tr>
+                        <?php if (!empty($coin['mintage'])): ?>
+                            <tr>
+                                <td class="specs-label">Mintage</td>
+                                <td><?php echo number_format($coin['mintage']); ?></td>
+                            </tr>
                         <?php endif; ?>
                     </table>
                 </div>
@@ -164,7 +193,7 @@ $owners = $stmtUsers->fetchAll();
             <div>
                 <div class="card" style="margin-bottom: 20px;">
                     <h3 style="margin-top: 0;">Analytics & Market Data</h3>
-                    
+
                     <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
                         <div class="stat-badge">
                             Owners: <span class="stat-value"><?php echo $total_owners; ?></span>
@@ -194,10 +223,10 @@ $owners = $stmtUsers->fetchAll();
                     <?php if (count($top_grades) > 0): ?>
                         <div style="margin-top: 10px;">
                             <strong style="font-size: 0.9rem; color: #555;">Most Common Grades:</strong>
-                            <?php 
-                                $max_g_count = $top_grades[0]['count']; 
-                                foreach ($top_grades as $g): 
-                                    $width = ($g['count'] / $max_g_count) * 100;
+                            <?php
+                            $max_g_count = $top_grades[0]['count'];
+                            foreach ($top_grades as $g):
+                                $width = ($g['count'] / $max_g_count) * 100;
                             ?>
                                 <div class="grade-row">
                                     <span style="width: 40px; font-weight: bold;"><?php echo $g['grade']; ?></span>
@@ -208,7 +237,7 @@ $owners = $stmtUsers->fetchAll();
                         </div>
                     <?php endif; ?>
                 </div>
-                
+
                 <div class="card">
                     <h3>Who else has it?</h3>
                     <?php if (count($owners) > 0): ?>
@@ -225,22 +254,45 @@ $owners = $stmtUsers->fetchAll();
                                     <tr>
                                         <td>
                                             <a href="view_profile.php?id=<?php echo $owner['owner_id']; ?>" style="text-decoration: none; color: #333; display: flex; align-items: center; gap: 8px;">
-                                                <?php if($owner['profile_image']): ?>
+                                                <?php if ($owner['profile_image']): ?>
                                                     <img src="<?php echo htmlspecialchars($owner['profile_image']); ?>" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">
                                                 <?php endif; ?>
                                                 <strong><?php echo htmlspecialchars($owner['username']); ?></strong>
                                             </a>
                                         </td>
-                                        <td><?php echo htmlspecialchars($owner['grade']); ?></td>
                                         <td>
-                                            <?php 
-                                                $sClass = 'status-collection';
-                                                if ($owner['status'] == 'sell') $sClass = 'status-sell';
-                                                if ($owner['status'] == 'swap') $sClass = 'status-swap';
+                                            <a href="grading_guide.php" title="View Grading Scale" style="color: inherit; text-decoration: none; border-bottom: 1px dashed #ccc; cursor: help;">
+                                                <?php echo htmlspecialchars($owner['grade']); ?>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            $sClass = 'status-collection';
+                                            if ($owner['status'] == 'sell') $sClass = 'status-sell';
+                                            if ($owner['status'] == 'swap') $sClass = 'status-swap';
                                             ?>
-                                            <span class="status-badge <?php echo $sClass; ?>">
-                                                <?php echo ucfirst($owner['status']); ?>
-                                            </span>
+
+                                            <?php if ($owner['status'] == 'swap' && isset($_SESSION['user_id']) && $owner['owner_id'] != $_SESSION['user_id']): ?>
+                                                <a href="swap_request.php?receiver_id=<?php echo $owner['owner_id']; ?>&wanted_coin_id=<?php echo $owner['user_coin_id']; ?>"
+                                                    title="Start Trade" style="text-decoration: none;">
+                                                    <span class="status-badge status-swap" style="cursor: pointer; border: 1px solid #e6a800;">
+                                                        Swap Coin
+                                                    </span>
+                                                </a>
+
+                                            <?php elseif ($owner['status'] == 'sell' && isset($_SESSION['user_id']) && $owner['owner_id'] != $_SESSION['user_id']): ?>
+                                                <a href="buy_request.php?coin_id=<?php echo $owner['user_coin_id']; ?>"
+                                                    title="Buy Coin" style="text-decoration: none;">
+                                                    <span class="status-badge status-sell" style="cursor: pointer; border: 1px solid #dc3545;">
+                                                        Buy Coin
+                                                    </span>
+                                                </a>
+
+                                            <?php else: ?>
+                                                <span class="status-badge <?php echo $sClass; ?>">
+                                                    <?php echo ucfirst($owner['status']); ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -254,4 +306,5 @@ $owners = $stmtUsers->fetchAll();
         </div>
     </div>
 </body>
+
 </html>

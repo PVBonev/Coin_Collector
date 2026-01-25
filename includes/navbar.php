@@ -33,15 +33,49 @@
                     <button type="submit" class="btn" style="padding: 6px 12px; font-size: 0.9rem; background: var(--accent-color); color: white; border: none; cursor: pointer;">&#128269;</button>
                 </form>
 
+                <?php
+                    if (isset($pdo)) {
+                        $stmtNotif = $pdo->prepare("SELECT COUNT(*) FROM trades WHERE receiver_id = ? AND status = 'pending'");
+                        $stmtNotif->execute([$_SESSION['user_id']]);
+                        $pending_count = $stmtNotif->fetchColumn();
+                    } else {
+                        $pending_count = 0;
+                    }
+                ?>
+                <a href="my_trades.php" style="position: relative; text-decoration: none; margin-right: 10px; display: flex; align-items: center;" title="Trade Notifications">
+                    <span style="font-size: 1.4rem; color: white;">&#128276;</span> <?php if ($pending_count > 0): ?>
+                        <span style="
+                            position: absolute;
+                            top: -5px;
+                            right: -5px;
+                            background-color: #dc3545;
+                            color: white;
+                            border-radius: 50%;
+                            padding: 2px 5px;
+                            font-size: 0.7rem;
+                            font-weight: bold;
+                            border: 1px solid var(--primary-color);
+                            line-height: 1;
+                            min-width: 15px;
+                            text-align: center;
+                        ">
+                            <?php echo $pending_count; ?>
+                        </span>
+                    <?php endif; ?>
+                </a>
                 
                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                     <a href="admin/dashboard.php" style="color: #ffc107; font-weight: bold; text-decoration: none;">Requests</a>
                 <?php endif; ?>
                 
                 <?php
-                    $stmtNav = $pdo->prepare("SELECT profile_image, username FROM users WHERE id = ?");
-                    $stmtNav->execute([$_SESSION['user_id']]);
-                    $navUser = $stmtNav->fetch();
+                    if (isset($pdo)) {
+                        $stmtNav = $pdo->prepare("SELECT profile_image, username FROM users WHERE id = ?");
+                        $stmtNav->execute([$_SESSION['user_id']]);
+                        $navUser = $stmtNav->fetch();
+                    } else {
+                        $navUser = ['username' => $_SESSION['username'], 'profile_image' => null];
+                    }
                     
                     $avatarUrl = '';
                     $hasAvatar = false;
@@ -59,7 +93,7 @@
                     $initial = strtoupper(substr($navUser['username'], 0, 1));
                 ?>
 
-                <div class="user-menu" style="margin-left: 10px; position: relative; display: inline-block;">
+                <div class="user-menu" style="margin-left: 5px; position: relative; display: inline-block;">
                     <button class="settings-btn" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
                         <?php if ($hasAvatar): ?>
                             <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="Profile" 
