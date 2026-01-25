@@ -1,5 +1,4 @@
 <?php
-// user_coin_details.php
 session_start();
 require 'config/db.php';
 
@@ -11,7 +10,6 @@ if (!isset($_SESSION['user_id'])) {
 $user_coin_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $user_id = $_SESSION['user_id'];
 
-// ВНИМАНИЕ: Добавихме новите колони в SELECT заявката (cc.weight, cc.diameter и т.н.)
 $sql = "SELECT 
             uc.*,
             cc.title, cc.denomination, cc.year, cc.material, cc.period,
@@ -26,6 +24,38 @@ $sql = "SELECT
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$user_coin_id, $user_id]);
 $coin = $stmt->fetch();
+
+$catalog_id = $coin['catalog_coin_id'];
+
+//how many ppl have it
+$stmtCount = $pdo->prepare("SELECT COUNT(DISTINCT user_id) FROM user_coins WHERE catalog_coin_id = ?");
+$stmtCount->execute([$catalog_id]);
+$total_owners = $stmtCount->fetchColumn();
+
+//price statistics
+$stmtPrices = $pdo->prepare("
+    SELECT 
+        MIN(price) as min_price, 
+        MAX(price) as max_price, 
+        AVG(price) as avg_price,
+        COUNT(*) as listings_count
+    FROM user_coins 
+    WHERE catalog_coin_id = ? AND status IN ('sell', 'swap') AND price > 0
+");
+$stmtPrices->execute([$catalog_id]);
+$market_data = $stmtPrices->fetch();
+
+//grade separation
+$stmtGrades = $pdo->prepare("
+    SELECT grade, COUNT(*) as count 
+    FROM user_coins 
+    WHERE catalog_coin_id = ? 
+    GROUP BY grade 
+    ORDER BY count DESC 
+    LIMIT 1
+");
+$stmtGrades->execute([$catalog_id]);
+$most_common_grade = $stmtGrades->fetch();
 
 if (!$coin) {
     die("Coin not found in your collection.");
@@ -49,12 +79,10 @@ if (!$coin) {
 
         <div class="image-hero">
             <?php
-            // Front Image Logic
             $front = 'assets/images/no-coin.png';
             if ($coin['own_image_front']) $front = $coin['own_image_front'];
             elseif ($coin['catalog_image_front']) $front = $coin['catalog_image_front'];
 
-            // Back Image Logic
             $back = 'assets/images/no-coin.png';
             if ($coin['own_image_back']) $back = $coin['own_image_back'];
             elseif ($coin['catalog_image_back']) $back = $coin['catalog_image_back'];
@@ -178,6 +206,56 @@ if (!$coin) {
                         <span class="data-value"><?php echo number_format($coin['mintage']); ?></span>
                     </div>
                 <?php endif; ?>
+
+                <div class="details-card" style="border-top: 4px solid; color: var(--accent-color);">
+                <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    Community Stats
+                </h3>
+                
+                <div class="data-row">
+                    <span class="data-label">Total Owners</span>
+                    <span class="data-value" style="font-weight: bold;"><?php echo $total_owners; ?> users</span>
+                </div>
+
+                <div class="data-row">
+                    <span class="data-label">Most Common Grade</span>
+                    <span class="data-value">
+                        <?php echo $most_common_grade ? $most_common_grade['grade'] : 'N/A'; ?>
+                    </span>
+                </div>
+
+                <hr style="margin: 15px 0; border: 0; border-top: 1px dashed #ddd;">
+                <h4 style="margin: 5px 0 10px 0; color: #555;">Market Data</h4>
+
+                <?php if ($market_data['listings_count'] > 0): ?>
+                    <div class="data-row">
+                        <span class="data-label">Market Price (Avg)</span>
+                        <span class="data-value" style="font-weight: bold;">
+                            <?php echo number_format($market_data['avg_price'], 2); ?> lv.
+                        </span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Price Range</span>
+                        <span class="data-value" style="font-size: 0.9rem;">
+                            <?php echo number_format($market_data['min_price'], 2); ?> - 
+                            <?php echo number_format($market_data['max_price'], 2); ?> lv.
+                        </span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: #888; text-align: center;">
+                        Based on <?php echo $market_data['listings_count']; ?> listings currently active.
+                    </div>
+                <?php else: ?>
+                    <p style="color: #999; font-style: italic; text-align: center;">
+                        No market data available yet.
+                    </p>
+                <?php endif; ?>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" class="btn" style="background: #d4af37; color: white; padding: 5px 15px; font-size: 0.85rem;">
+                        View All Owners
+                    </a>
+                </div>
+            </div>
                 <div style="margin-top: 20px; text-align: center;">
                     <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" style="color: var(--accent-color); font-size: 0.9rem;">
                         View Global Catalog Page &rarr;

@@ -1,5 +1,4 @@
 <?php
-// catalog_coin.php
 session_start();
 require 'config/db.php';
 
@@ -11,7 +10,7 @@ if ($coin_id === 0) {
     exit;
 }
 
-// 1. Взимаме детайлите за монетата
+//take coin details from catalog
 $stmt = $pdo->prepare("
     SELECT cc.*, c.name as country_name, c.flag_image, c.id as country_id
     FROM catalog_coins cc
@@ -25,16 +24,54 @@ if (!$coin) {
     die("Coin not found or not approved yet.");
 }
 
-// 2. Проверяваме дали ТИ я имаш
+//check if we have it
 $stmtOwn = $pdo->prepare("SELECT * FROM user_coins WHERE user_id = ? AND catalog_coin_id = ?");
 $stmtOwn->execute([$user_id, $coin_id]);
 $my_copy = $stmtOwn->fetch();
 
-// 3. Взимаме списък с други собственици (Community)
-// Показваме само тези, които са 'swap' или 'sell', или всички (по твой избор)
-// Тук ще покажем всички, но ще сортираме тези за продажба най-отгоре
+
+
+//statistics section
+$stmtPrices = $pdo->prepare("
+    SELECT 
+        COUNT(*) as listings_count,
+        MIN(price) as min_price, 
+        MAX(price) as max_price, 
+        AVG(price) as avg_price
+    FROM user_coins 
+    WHERE catalog_coin_id = ? AND status IN ('sell', 'swap') AND price > 0
+");
+$stmtPrices->execute([$coin_id]);
+$market = $stmtPrices->fetch();
+
+$stmtCount = $pdo->prepare("SELECT COUNT(DISTINCT user_id) FROM user_coins WHERE catalog_coin_id = ?");
+$stmtCount->execute([$coin_id]);
+$total_owners = $stmtCount->fetchColumn();
+
+$stmtGrades = $pdo->prepare("
+    SELECT grade, COUNT(*) as count 
+    FROM user_coins 
+    WHERE catalog_coin_id = ? 
+    GROUP BY grade 
+    ORDER BY count DESC 
+    LIMIT 3
+");
+$stmtGrades->execute([$coin_id]);
+$top_grades = $stmtGrades->fetchAll();
+
+$stmtStatus = $pdo->prepare("
+    SELECT status, COUNT(*) as count 
+    FROM user_coins 
+    WHERE catalog_coin_id = ? AND status IN ('sell', 'swap')
+    GROUP BY status
+");
+$stmtStatus->execute([$coin_id]);
+$availability = $stmtStatus->fetchAll(PDO::FETCH_KEY_PAIR);
+$for_sale = $availability['sell'] ?? 0;
+$for_swap = $availability['swap'] ?? 0;
+
 $stmtUsers = $pdo->prepare("
-    SELECT uc.grade, uc.status, uc.added_at, u.username
+    SELECT uc.grade, uc.status, uc.added_at, u.username, u.profile_image, u.id as owner_id
     FROM user_coins uc
     JOIN users u ON uc.user_id = u.id
     WHERE uc.catalog_coin_id = ? AND uc.user_id != ?
@@ -52,33 +89,7 @@ $owners = $stmtUsers->fetchAll();
     <title><?php echo htmlspecialchars($coin['title']); ?> - Details</title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <style>
-        .coin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
-        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
         
-        /* Images */
-        .images-container { display: flex; gap: 20px; justify-content: center; background: #f9f9f9; padding: 20px; border-radius: 8px; }
-        .coin-large-img { max-width: 45%; height: auto; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.15); transition: transform 0.3s; }
-        .coin-large-img:hover { transform: scale(1.05); }
-
-        /* Specs Table */
-        .specs-table { width: 100%; border-collapse: collapse; }
-        .specs-table td { padding: 10px; border-bottom: 1px solid #eee; }
-        .specs-label { font-weight: bold; color: #666; width: 40%; }
-        
-        /* Owners Table */
-        .owners-list { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .owners-list th { text-align: left; background: #f1f1f1; padding: 10px; font-size: 0.9rem; }
-        .owners-list td { padding: 10px; border-bottom: 1px solid #eee; }
-        
-        /* Badges */
-        .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; }
-        .status-sell { background: #ffebee; color: #c62828; }
-        .status-swap { background: #fff3e0; color: #ef6c00; }
-        .status-collection { background: #e3f2fd; color: #1565c0; }
-
-        @media (max-width: 768px) {
-            .details-grid { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
@@ -99,14 +110,15 @@ $owners = $stmtUsers->fetchAll();
             
             <div>
                 <?php if ($my_copy): ?>
-                    <button class="btn" style="background: #28a745; cursor: default;">&#10003; You own this coin</button>
-                    <?php else: ?>
-                    <a href="add_coin.php" class="btn btn-accent">+ I have this coin</a>
+                    <a href="user_coin_details.php?id=<?php echo $my_copy['id']; ?>" class="btnblk" style="background: #d4af37;"> View Your Coin</a>
+                <?php else: ?>
+                    <a href="add_coin.php?catalog_coin_id=<?php echo $coin['id']; ?>" class="btn btn-accent">+ I have this coin</a>
                 <?php endif; ?>
             </div>
         </div>
 
         <div class="details-grid">
+            
             <div>
                 <div class="images-container">
                     <?php 
@@ -118,15 +130,13 @@ $owners = $stmtUsers->fetchAll();
                 </div>
                 
                 <?php if ($coin['description']): ?>
-                    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 8px; line-height: 1.6;">
+                    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 8px; line-height: 1.6; border: 1px solid #eee;">
                         <strong>Description:</strong><br>
                         <?php echo nl2br(htmlspecialchars($coin['description'])); ?>
                     </div>
                 <?php endif; ?>
-            </div>
 
-            <div>
-                <div class="card">
+                <div class="card" style="margin-top: 20px;">
                     <h3>Specifications</h3>
                     <table class="specs-table">
                         <tr><td class="specs-label">Country</td><td><?php echo htmlspecialchars($coin['country_name']); ?></td></tr>
@@ -134,31 +144,72 @@ $owners = $stmtUsers->fetchAll();
                         <tr><td class="specs-label">Value</td><td><?php echo htmlspecialchars($coin['denomination']); ?></td></tr>
                         <tr><td class="specs-label">Material</td><td><?php echo htmlspecialchars($coin['material'] ?? 'Unknown'); ?></td></tr>
                         <tr><td class="specs-label">Period</td><td><?php echo htmlspecialchars($coin['period'] ?? 'Unknown'); ?></td></tr>
-                        <table class="specs-table">
-    <tr><td class="specs-label">Country</td><td><?php echo htmlspecialchars($coin['country_name']); ?></td></tr>
-    <tr><td class="specs-label">Year</td><td><?php echo $coin['year']; ?></td></tr>
-    <tr><td class="specs-label">Value</td><td><?php echo htmlspecialchars($coin['denomination']); ?></td></tr>
-    <tr><td class="specs-label">Material</td><td><?php echo htmlspecialchars($coin['material'] ?? 'Unknown'); ?></td></tr>
-    <tr><td class="specs-label">Period</td><td><?php echo htmlspecialchars($coin['period'] ?? 'Unknown'); ?></td></tr>
-    
-    <?php if(!empty($coin['weight'])): ?>
-        <tr><td class="specs-label">Weight</td><td><?php echo $coin['weight']; ?> g</td></tr>
-    <?php endif; ?>
-    <?php if(!empty($coin['diameter'])): ?>
-        <tr><td class="specs-label">Diameter</td><td><?php echo $coin['diameter']; ?> mm</td></tr>
-    <?php endif; ?>
-    <?php if(!empty($coin['thickness'])): ?>
-        <tr><td class="specs-label">Thickness</td><td><?php echo $coin['thickness']; ?> mm</td></tr>
-    <?php endif; ?>
-    <?php if(!empty($coin['mintage'])): ?>
-        <tr><td class="specs-label">Mintage</td><td><?php echo number_format($coin['mintage']); ?></td></tr>
-    <?php endif; ?>
-</table>
+                        
+                        <?php if(!empty($coin['weight'])): ?>
+                            <tr><td class="specs-label">Weight</td><td><?php echo $coin['weight']; ?> g</td></tr>
+                        <?php endif; ?>
+                        <?php if(!empty($coin['diameter'])): ?>
+                            <tr><td class="specs-label">Diameter</td><td><?php echo $coin['diameter']; ?> mm</td></tr>
+                        <?php endif; ?>
+                        <?php if(!empty($coin['thickness'])): ?>
+                            <tr><td class="specs-label">Thickness</td><td><?php echo $coin['thickness']; ?> mm</td></tr>
+                        <?php endif; ?>
+                        <?php if(!empty($coin['mintage'])): ?>
+                            <tr><td class="specs-label">Mintage</td><td><?php echo number_format($coin['mintage']); ?></td></tr>
+                        <?php endif; ?>
                     </table>
                 </div>
-                
+            </div>
 
-                <div class="card" style="margin-top: 20px;">
+            <div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3 style="margin-top: 0;">Analytics & Market Data</h3>
+                    
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <div class="stat-badge">
+                            Owners: <span class="stat-value"><?php echo $total_owners; ?></span>
+                        </div>
+                        <div class="stat-badge">
+                            For Sale: <span class="stat-value" style="color: #dc3545;"><?php echo $for_sale; ?></span>
+                        </div>
+                        <div class="stat-badge">
+                            For Swap: <span class="stat-value" style="color: #ef6c00;"><?php echo $for_swap; ?></span>
+                        </div>
+                    </div>
+
+                    <?php if ($market['listings_count'] > 0): ?>
+                        <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                            <strong style="color: #555;">Market Value (Est.)</strong><br>
+                            <span style="font-size: 1.2rem; font-weight: bold; color: #28a745;">
+                                <?php echo number_format($market['avg_price'], 2); ?> lv.
+                            </span>
+                            <div style="font-size: 0.8rem; color: #888;">
+                                Range: <?php echo number_format($market['min_price'], 2); ?> - <?php echo number_format($market['max_price'], 2); ?> lv.
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <p style="color: #999; font-style: italic; font-size: 0.9rem;">No active market listings yet.</p>
+                    <?php endif; ?>
+
+                    <?php if (count($top_grades) > 0): ?>
+                        <div style="margin-top: 10px;">
+                            <strong style="font-size: 0.9rem; color: #555;">Most Common Grades:</strong>
+                            <?php 
+                                $max_g_count = $top_grades[0]['count']; 
+                                foreach ($top_grades as $g): 
+                                    $width = ($g['count'] / $max_g_count) * 100;
+                            ?>
+                                <div class="grade-row">
+                                    <span style="width: 40px; font-weight: bold;"><?php echo $g['grade']; ?></span>
+                                    <div class="grade-bar" style="width: <?php echo $width * 0.6; ?>%;"></div>
+                                    <span>(<?php echo $g['count']; ?>)</span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                
+                <div class="card">
                     <h3>Who else has it?</h3>
                     <?php if (count($owners) > 0): ?>
                         <table class="owners-list">
@@ -173,7 +224,12 @@ $owners = $stmtUsers->fetchAll();
                                 <?php foreach ($owners as $owner): ?>
                                     <tr>
                                         <td>
-                                            <strong><?php echo htmlspecialchars($owner['username']); ?></strong>
+                                            <a href="view_profile.php?id=<?php echo $owner['owner_id']; ?>" style="text-decoration: none; color: #333; display: flex; align-items: center; gap: 8px;">
+                                                <?php if($owner['profile_image']): ?>
+                                                    <img src="<?php echo htmlspecialchars($owner['profile_image']); ?>" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">
+                                                <?php endif; ?>
+                                                <strong><?php echo htmlspecialchars($owner['username']); ?></strong>
+                                            </a>
                                         </td>
                                         <td><?php echo htmlspecialchars($owner['grade']); ?></td>
                                         <td>
