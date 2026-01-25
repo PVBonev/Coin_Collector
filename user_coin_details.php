@@ -1,5 +1,4 @@
 <?php
-// user_coin_details.php
 session_start();
 require 'config/db.php';
 
@@ -70,19 +69,6 @@ $most_common_grade = $stmtGrades->fetch();
     <meta charset="UTF-8">
     <title>My <?php echo htmlspecialchars($coin['title']); ?></title>
     <link rel="stylesheet" href="assets/css/styles.css">
-    <style>
-        /* При мобилни устройства връщаме една под друга */
-        @media (max-width: 768px) {
-            .image-hero {
-                flex-direction: column-reverse !important; /* Снимката да отиде отгоре на мобилен */
-                text-align: center !important;
-            }
-            .coin-header-info {
-                text-align: center !important;
-                margin-bottom: 20px;
-            }
-        }
-    </style>
 </head>
 
 <body>
