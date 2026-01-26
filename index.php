@@ -169,8 +169,8 @@ $top_periods = $stmtPeriods->fetchAll();
 
                 <div class="filter-box">
                     <select id="collectionSort" onchange="sortCollection()">
-                        <option value="added_desc">Date Added (Newest)</option>
-                        <option value="added_asc">Date Added (Oldest)</option>
+                        <option value="added_desc">Date Added (Newest -> Oldest)</option>
+                        <option value="added_asc">Date Added (Oldest -> Newest)</option>
                         <option value="year_desc">Year (Newest -> Oldest)</option>
                         <option value="year_asc">Year (Oldest -> Newest)</option>
                         <option value="title_asc">Name (A-Z)</option>

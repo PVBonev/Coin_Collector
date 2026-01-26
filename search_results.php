@@ -66,9 +66,6 @@ $total_pages = ceil($total_results / $limit);
     <meta charset="UTF-8">
     <title>Search Results: <?php echo htmlspecialchars($query); ?></title>
     <link rel="stylesheet" href="assets/css/styles.css">
-    <style>
-        
-    </style>
 </head>
 <body>
     <?php include 'includes/navbar.php'; ?>
@@ -128,7 +125,11 @@ $total_pages = ceil($total_results / $limit);
                     <?php foreach ($results as $coin): ?>
                         <div class="result-row">
                             <div class="row-left">
-                                <img src="<?php echo htmlspecialchars($coin['catalog_image_front']); ?>" class="row-img" alt="Coin">
+                                <?php 
+                                    $coinImg = !empty($coin['catalog_image_front']) ? $coin['catalog_image_front'] : 'assets/images/no-coin.png';
+                                ?>
+                                <img src="<?php echo htmlspecialchars($coinImg); ?>" class="row-img" alt="Coin">
+                                
                                 <div class="row-info">
                                     <h3><?php echo htmlspecialchars($coin['title']); ?></h3>
                                     <p>
@@ -146,7 +147,9 @@ $total_pages = ceil($total_results / $limit);
                     <?php endforeach; ?>
                 <?php endif; ?>
 
-            </div> <?php if ($total_pages > 1): ?>
+            </div> 
+            
+            <?php if ($total_pages > 1): ?>
                 <div class="pagination">
                     <?php if ($page > 1): ?>
                         <a href="?q=<?php echo urlencode($query); ?>&type=<?php echo $type; ?>&page=<?php echo $page - 1; ?>" class="page-link">&laquo; Previous</a>
