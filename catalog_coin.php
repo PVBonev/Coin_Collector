@@ -147,7 +147,7 @@ $owners = $stmtUsers->fetchAll();
                             <td><?php echo $coin['year']; ?></td>
                         </tr>
                         <tr>
-                            <td class="specs-label">Value</td>
+                            <td class="specs-label">Denomination</td>
                             <td><?php echo htmlspecialchars($coin['denomination']); ?></td>
                         </tr>
                         <tr>
@@ -302,6 +302,8 @@ $owners = $stmtUsers->fetchAll();
             </div>
         </div>
     </div>
+    <?php include 'includes/footer.php'; ?>
+
 </body>
 
 </html>

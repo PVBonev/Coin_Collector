@@ -225,6 +225,8 @@ $countries = $stmt->fetchAll();
             });
         }
     </script>
+    <?php include 'includes/footer.php'; ?>
+
 </body>
 
 </html>

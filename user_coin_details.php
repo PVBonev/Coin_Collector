@@ -285,11 +285,11 @@ $most_common_grade = $stmtGrades->fetch();
 
             <div class="action-bar" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
                 <a href="edit_coin.php?id=<?php echo $coin['id']; ?>" class="btn btn-accent" style="min-width: 150px;">
-                    &#9998; Edit Details
+                    Edit Details
                 </a>
 
                 <button onclick="openDeleteModal()" class="btn" style="background: #dc3545; color: white; min-width: 150px;">
-                    &#128465; Delete Coin
+                    Delete Coin
                 </button>
             </div>
 
@@ -329,6 +329,7 @@ $most_common_grade = $stmtGrades->fetch();
             if (event.target == modal) closeDeleteModal();
         }
     </script>
+    <?php include 'includes/footer.php'; ?>
 </body>
 
 </html>

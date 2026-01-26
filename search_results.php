@@ -173,5 +173,7 @@ $total_pages = ceil($total_results / $limit);
             </div>
         <?php endif; ?>
     </div>
+    <?php include 'includes/footer.php'; ?>
+
 </body>
 </html>

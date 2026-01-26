@@ -224,6 +224,8 @@ $initial = strtoupper(substr($user['username'], 0, 1));
             if (event.target == deleteModal) closeDeleteModal();
         }
     </script>
+    <?php include 'includes/footer.php'; ?>
+
 </body>
 
 </html>

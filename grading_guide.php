@@ -187,5 +187,7 @@ session_start();
             <a href="index.php" class="btn btn-accent">Back to Dashboard</a>
         </div>
     </div>
+    <?php include 'includes/footer.php'; ?>
+
 </body>
 </html>

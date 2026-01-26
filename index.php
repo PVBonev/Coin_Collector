@@ -1,4 +1,5 @@
 <?php
+// index.php
 session_start();
 require 'config/db.php';
 
@@ -15,7 +16,8 @@ $sqlCoins = "SELECT
             uc.grade,
             uc.status,
             uc.is_locked,       
-            uc.own_image_front,  
+            uc.own_image_front,
+            uc.added_at, 
             cc.title,
             cc.year,
             cc.denomination,
@@ -82,7 +84,6 @@ if ($total_coins > 0) {
     $pie_gradient = '#eee 0% 100%';
 }
 
-//top countries
 $stmtCountries = $pdo->prepare("
     SELECT c.name, COUNT(*) as count, c.flag_image
     FROM user_coins uc
@@ -95,7 +96,6 @@ $stmtCountries = $pdo->prepare("
 $stmtCountries->execute([$user_id]);
 $top_countries = $stmtCountries->fetchAll();
 
-//top periods
 $stmtPeriods = $pdo->prepare("
     SELECT cc.period, COUNT(*) as count
     FROM user_coins uc
@@ -124,6 +124,8 @@ $top_periods = $stmtPeriods->fetchAll();
             position: relative;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
 
@@ -158,13 +160,36 @@ $top_periods = $stmtPeriods->fetchAll();
         <?php endif; ?>
 
         <div id="tab-collection" class="tab-content active">
-            <p>You have <strong><?php echo count($my_coins); ?></strong> coins in your collection.</p>
+            
+            <div class="controls-bar" style="margin-bottom: 20px;">
+                <div class="search-box">
+                    <span class="search-icon">&#128269;</span>
+                    <input type="text" id="collectionSearch" placeholder="Search by title, country or year..." onkeyup="filterCollection()">
+                </div>
+
+                <div class="filter-box">
+                    <select id="collectionSort" onchange="sortCollection()">
+                        <option value="added_desc">Date Added (Newest)</option>
+                        <option value="added_asc">Date Added (Oldest)</option>
+                        <option value="year_desc">Year (Newest -> Oldest)</option>
+                        <option value="year_asc">Year (Oldest -> Newest)</option>
+                        <option value="title_asc">Name (A-Z)</option>
+                        <option value="title_desc">Name (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+
+            <p style="margin-bottom: 15px;">You have <strong id="visibleCount"><?php echo count($my_coins); ?></strong> coins in your collection.</p>
 
             <?php if (count($my_coins) > 0): ?>
-                <div class="collection-grid">
+                <div class="collection-grid" id="collectionGrid">
                     <?php foreach ($my_coins as $coin): ?>
 
-                        <div class="coin-card <?php echo $coin['is_locked'] ? 'locked' : ''; ?>">
+                        <div class="coin-card <?php echo $coin['is_locked'] ? 'locked' : ''; ?>" 
+                             data-title="<?php echo strtolower(htmlspecialchars($coin['title'])); ?>"
+                             data-country="<?php echo strtolower(htmlspecialchars($coin['country_name'])); ?>"
+                             data-year="<?php echo $coin['year']; ?>"
+                             data-added="<?php echo strtotime($coin['added_at']); ?>">
 
                             <?php if ($coin['is_locked']): ?>
                                 <div class="lock-overlay">&#128274;</div>
@@ -231,6 +256,11 @@ $top_periods = $stmtPeriods->fetchAll();
 
                     <?php endforeach; ?>
                 </div>
+                
+                <div id="noResults" style="text-align: center; display: none; padding: 40px; color: #777;">
+                    <h3>No coins found.</h3>
+                </div>
+
             <?php else: ?>
                 <div class="card" style="text-align: center; padding: 40px;">
                     <h3>Your collection is empty!</h3>
@@ -347,7 +377,56 @@ $top_periods = $stmtPeriods->fetchAll();
             if (tabName === 'collection') buttons[0].classList.add('active');
             else buttons[1].classList.add('active');
         }
+
+
+        function filterCollection() {
+            const input = document.getElementById('collectionSearch').value.toLowerCase();
+            const cards = document.querySelectorAll('.coin-card');
+            let visible = 0;
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title');
+                const country = card.getAttribute('data-country');
+                const year = card.getAttribute('data-year');
+
+                if (title.includes(input) || country.includes(input) || year.includes(input)) {
+                    card.classList.remove('hidden');
+                    visible++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('visibleCount').innerText = visible;
+            document.getElementById('noResults').style.display = (visible === 0) ? 'block' : 'none';
+        }
+
+        function sortCollection() {
+            const sortType = document.getElementById('collectionSort').value;
+            const grid = document.getElementById('collectionGrid');
+            const cards = Array.from(grid.getElementsByClassName('coin-card'));
+
+            cards.sort((a, b) => {
+                const titleA = a.getAttribute('data-title');
+                const titleB = b.getAttribute('data-title');
+                const yearA = parseInt(a.getAttribute('data-year'));
+                const yearB = parseInt(b.getAttribute('data-year'));
+                const addedA = parseInt(a.getAttribute('data-added'));
+                const addedB = parseInt(b.getAttribute('data-added'));
+
+                if (sortType === 'title_asc') return titleA.localeCompare(titleB);
+                if (sortType === 'title_desc') return titleB.localeCompare(titleA);
+                if (sortType === 'year_desc') return yearB - yearA;
+                if (sortType === 'year_asc') return yearA - yearB;
+                if (sortType === 'added_asc') return addedA - addedB;
+                if (sortType === 'added_desc') return addedB - addedA; // default
+            });
+
+            grid.innerHTML = "";
+            cards.forEach(card => grid.appendChild(card));
+        }
     </script>
+    <?php include 'includes/footer.php'; ?>
 </body>
 
 </html>

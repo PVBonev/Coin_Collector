@@ -170,6 +170,8 @@ $count_sent = count($sent_trades);
             }
         }
     </script>
+    <?php include 'includes/footer.php'; ?>
+
 </body>
 
 </html>

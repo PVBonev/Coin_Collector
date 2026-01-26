@@ -129,7 +129,7 @@ foreach ($items as $item) {
                     <h3 style="border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-top: 0;">Payment</h3>
                     <div style="text-align: center; padding: 30px 0;">
                         <span style="font-size: 3rem; color: #28a745; font-weight: bold;">
-                            <?php echo number_format($total_price, 2); ?> <small>lv.</small>
+                            <?php echo number_format($total_price, 2); ?> <small>€</small>
                         </span>
                         <p style="color: #666;">Total Price for items</p>
                         <p style="font-size: 0.9rem; font-style: italic;">(Shipping not included)</p>
@@ -209,5 +209,7 @@ foreach ($items as $item) {
             </div>
         <?php endif; ?>
     </div>
+    <?php include 'includes/footer.php'; ?>
+
 </body>
 </html>

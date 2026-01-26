@@ -164,5 +164,7 @@ $their_swap_coins = $stmtTheir->fetchAll();
             }
         });
     </script>
+    <?php include 'includes/footer.php'; ?>
+
 </body>
 </html>

@@ -82,6 +82,8 @@ if ($coin['seller_id'] == $buyer_id) {
             </form>
         </div>
     </div>
+    <?php include 'includes/footer.php'; ?>
+
 </body>
 
 </html>
