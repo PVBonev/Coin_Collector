@@ -1,8 +1,8 @@
 # 🪙 CoinCollector - Numismatic Collection & Trading Platform
 
-**CoinCollector** is a comprehensive web-based application designed for numismatists to manage their personal coin collections, track statistics, and interact with other collectors through a robust trading system.
+**CoinCollector** is a comprehensive web-based application designed for numismatists to manage their personal coin collections, track statistics, and interact with other collectors through a trading system.
 
-Developed as a university project, this application moves beyond simple inventory management by introducing a marketplace for swapping and selling coins, backed by a relational database and a secure authentication system.
+
 
 ---
 
@@ -15,7 +15,7 @@ Developed as a university project, this application moves beyond simple inventor
 * **Data Portability:** Full CSV Import and Export functionality to backup your data.
 
 ### 🤝 Trading System (Marketplace)
-* **Coin Statuses:** Mark coins as *Collection*, *Swap*, *Sell*, or *Wishlist*.
+* **Coin Statuses:** Mark coins as *Collection*, *Swap*, *Sell*.
 * **Trade Requests:** Users can initiate **Swap** or **Buy** requests with other users.
 * **Counter-Offers:** Advanced negotiation logic allowing users to decline an offer and propose a counter-swap immediately.
 * **Transaction Flow:** Full lifecycle management (Pending → Accepted → Confirmed → Completed).
