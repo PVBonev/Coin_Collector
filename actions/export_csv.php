@@ -16,7 +16,7 @@ header('Content-Disposition: attachment; filename="' . $filename . '"');
 $output = fopen('php://output', 'w');
 
 //BOM so it can read cirillic characters in Excel
-fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
 //writing column headers
 fputcsv($output, ['Country', 'Year', 'Denomination', 'Title', 'Grade', 'Status', 'Price', 'Notes']);
@@ -46,4 +46,3 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
 fclose($output);
 exit;
-?>

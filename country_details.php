@@ -1,4 +1,4 @@
-<?php
+<?php // this is old code that is basically unused now
 session_start();
 require 'config/db.php';
 

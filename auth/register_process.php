@@ -29,14 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
         $stmt->execute([$username, $email]);
-        
+
         if ($stmt->rowCount() > 0) {
             $_SESSION['error'] = "Username or Email already exists.";
             header("Location: ../register.php");
             exit;
         }
 
-  
+
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
         $sql = "INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, 'user', NOW())";
@@ -44,16 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmtInsert->execute([$username, $email, $password_hash]);
 
         $newUserId = $pdo->lastInsertId();
-        
+
         $_SESSION['user_id'] = $newUserId;
         $_SESSION['username'] = $username;
         $_SESSION['role'] = 'user';
 
         $_SESSION['success'] = "Welcome to Coin Collector! Start by adding your first coin.";
-        
+
         header("Location: ../index.php");
         exit;
-
     } catch (PDOException $e) {
         $_SESSION['error'] = "Registration failed: " . $e->getMessage();
         header("Location: ../register.php");
@@ -63,4 +62,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     header("Location: ../register.php");
     exit;
 }
-?>

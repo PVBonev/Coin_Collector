@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $email = trim($_POST['email']);
         $location = trim($_POST['location']);
         $bio = trim($_POST['bio']);
-        
+
         $checkEmail = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
         $checkEmail->execute([$email, $user_id]);
         if ($checkEmail->rowCount() > 0) {
@@ -40,9 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         $imagePath = null;
-        
+
         if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === UPLOAD_ERR_OK) {
-            
+
             $targetDir = '../uploads/user_prof_pics/';
             if (!is_dir($targetDir)) {
                 mkdir($targetDir, 0777, true);
@@ -80,11 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([$email, $location, $bio, $user_id]);
             }
-            
+
             if (!isset($_SESSION['error'])) {
                 $_SESSION['success'] = "Profile updated successfully!";
             }
-
         } catch (PDOException $e) {
             $_SESSION['error'] = "Database error: " . $e->getMessage();
         }
@@ -93,4 +92,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 }
-?>

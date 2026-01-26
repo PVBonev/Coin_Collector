@@ -1,5 +1,4 @@
 <?php
-// trade_details.php
 session_start();
 require 'config/db.php';
 
@@ -25,13 +24,10 @@ $trade = $stmt->fetch();
 
 if (!$trade) die("Trade not found.");
 
-// Определяне на ролите
 $am_i_sender = ($trade['sender_id'] == $user_id);
-// Sender = Купувач (Initiator), Receiver = Продавач
 $partner_name = $am_i_sender ? $trade['receiver_name'] : $trade['sender_name'];
 $partner_email = $am_i_sender ? $trade['receiver_email'] : $trade['sender_email'];
 
-// Взимане на монетите
 $stmtItems = $pdo->prepare("
     SELECT ti.*, 
            cc.title, cc.denomination, cc.year, uc.price,
@@ -44,8 +40,8 @@ $stmtItems = $pdo->prepare("
 $stmtItems->execute([$trade_id]);
 $items = $stmtItems->fetchAll();
 
-$offered_items = []; // За SWAP
-$requested_items = []; // За SWAP и SELL (Монетите, които Sender-а иска)
+$offered_items = []; // swap
+$requested_items = []; // swap and sell
 $total_price = 0;
 
 foreach ($items as $item) {
@@ -53,7 +49,7 @@ foreach ($items as $item) {
         $offered_items[] = $item;
     } else {
         $requested_items[] = $item;
-        $total_price += $item['price']; // Сумираме цената
+        $total_price += $item['price']; 
     }
 }
 ?>
@@ -65,15 +61,7 @@ foreach ($items as $item) {
     <title>Trade #<?php echo $trade_id; ?></title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <style>
-        .details-split { display: flex; gap: 30px; margin-top: 20px; }
-        .details-col { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .coin-mini-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #eee; }
-        .coin-mini-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .status-box { text-align: center; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
-        .st-pending { background: #fff3cd; color: #856404; }
-        .st-accepted { background: #d4edda; color: #155724; }
-        .st-completed { background: #c3e6cb; color: #155724; border: 1px solid #28a745; }
-        .st-declined, .st-cancelled { background: #f8d7da; color: #721c24; }
+        
     </style>
 </head>
 <body>
@@ -107,13 +95,10 @@ foreach ($items as $item) {
                         $i_confirmed = ($am_i_sender && $trade['sender_confirmed']) || (!$am_i_sender && $trade['receiver_confirmed']);
                         $they_confirmed = ($am_i_sender && $trade['receiver_confirmed']) || (!$am_i_sender && $trade['sender_confirmed']);
                         
-                        // Текст на бутона според ролята
                         if ($trade['type'] == 'sell') {
-                            // Receiver е Продавач -> "Получих пари"
-                            // Sender е Купувач -> "Получих монета"
-                            $btnText = $am_i_sender ? "📦 I Received the Coin" : "💰 I Received Payment";
+                            $btnText = $am_i_sender ? "I Received the Coin" : "I Received Payment";
                         } else {
-                            $btnText = "📦 I Received the Items";
+                            $btnText = "I Received the Items";
                         }
                     ?>
 
@@ -188,7 +173,7 @@ foreach ($items as $item) {
                             <strong><?php echo htmlspecialchars($item['title']); ?></strong><br>
                             <small><?php echo $item['year']; ?> • <?php echo htmlspecialchars($item['denomination']); ?></small>
                             <?php if($trade['type'] == 'sell'): ?>
-                                <br><span style="color: #28a745; font-weight: bold; font-size: 0.85rem;"><?php echo number_format($item['price'], 2); ?> lv.</span>
+                                <br><span style="color: #28a745; font-weight: bold; font-size: 0.85rem;"><?php echo number_format($item['price'], 2); ?> €</span>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -204,12 +189,12 @@ foreach ($items as $item) {
                     <div style="display: flex; gap: 10px; justify-content: center;">
                         <form action="actions/process_trade.php" method="POST">
                             <input type="hidden" name="trade_id" value="<?php echo $trade_id; ?>">
-                            <button type="submit" name="action" value="accept" class="btn" style="background: #28a745;">&#10003; Accept Sale</button>
+                            <button type="submit" name="action" value="accept" class="btn" style="background: #28a745;">Accept Sale</button>
                         </form>
                         
                         <form action="actions/process_trade.php" method="POST">
                             <input type="hidden" name="trade_id" value="<?php echo $trade_id; ?>">
-                            <button type="submit" name="action" value="decline" class="btn" style="background: #dc3545;">&#10005; Decline</button>
+                            <button type="submit" name="action" value="decline" class="btn" style="background: #dc3545;">Decline</button>
                         </form>
                     </div>
 

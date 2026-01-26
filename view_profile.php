@@ -221,7 +221,7 @@ $coins = $stmt->fetchAll();
 
             <div class="stat-card" style="border-color: #28a745;">
                 <div class="stat-value">
-                    <?php echo $stats['total_value'] > 0 ? number_format($stats['total_value'], 2) . ' lv.' : '-'; ?>
+                    <?php echo $stats['total_value'] > 0 ? number_format($stats['total_value'], 2) . ' €' : '-'; ?>
                 </div>
                 <div class="stat-label">Collection Value</div>
             </div>

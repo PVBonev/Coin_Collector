@@ -219,6 +219,51 @@ input:focus {
   color: var(--text-light);
   font-weight: bold;
 }
+.controls-bar {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 2;
+  position: relative;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 10px 10px 35px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+.filter-box {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-box select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
 
 /* Badges and Grades */
 .collection-grid {
@@ -452,6 +497,103 @@ input:focus {
   margin-bottom: 10px;
 }
 
+.add-coin-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.sidebar {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 20px;
+}
+
+.coin-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.coin-option-card {
+  background: white;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+  position: relative;
+}
+
+.coin-option-card:hover {
+  transform: translateY(-3px);
+  border-color: #ccc;
+}
+
+.coin-option-card.selected {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+
+.coin-option-img {
+  height: 150px;
+  background: #f9f9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coin-option-img img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.coin-option-info {
+  padding: 10px;
+  text-align: center;
+}
+
+.coin-option-denom {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.coin-option-title {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 5px;
+}
+
+#details-form-container {
+  display: none;
+  margin-top: 30px;
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-left: 5px solid var(--accent-color);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  background: #fff;
+  border-radius: 8px;
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+  .add-coin-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /*user_coin_details.php*/
 .image-hero {
   background: white;
@@ -626,7 +768,7 @@ input:focus {
 .coin-img-box {
   width: 100%;
   height: 200px;
-  background: #f4f4f4;
+  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -636,7 +778,7 @@ input:focus {
 .coin-img-box img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .coin-details {
@@ -1205,4 +1347,371 @@ textarea.form-control:disabled {
   gap: 10px;
   justify-content: center;
   margin-top: 20px;
+}
+
+/* admin: dashboard.php and review_coin.php*/
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.admin-table th,
+.admin-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+.admin-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #333;
+}
+.admin-table tr:hover {
+  background-color: #f1f1f1;
+}
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.85rem;
+}
+
+.review-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.preview-images img {
+  max-width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.action-bar {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+/* my_trades.php */
+.tabs-header {
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #666;
+  font-weight: bold;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+}
+
+.tab-btn:hover {
+  color: var(--accent-color);
+  background: #f9f9f9;
+}
+
+.tab-btn.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.trade-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 5px solid #ccc;
+  transition: transform 0.2s;
+}
+.trade-card:hover {
+  transform: translateX(5px);
+}
+
+.status-pending {
+  border-left-color: var(--accent-color);
+  background: #fffdf5;
+}
+.status-accepted {
+  border-left-color: #28a745;
+}
+.status-completed {
+  border-left-color: #155724;
+  background: #f0fff4;
+}
+.status-declined {
+  border-left-color: #dc3545;
+  opacity: 0.7;
+}
+.status-cancelled {
+  border-left-color: #6c757d;
+  opacity: 0.7;
+}
+
+.partner-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.partner-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+.partner-initial {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #0056b3;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  border: 2px solid #eef;
+}
+
+.trade-status-badge {
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: #eee;
+  color: #555;
+  display: inline-block;
+}
+.active-badge {
+  background: var(--accent-color);
+  color: white;
+}
+
+.trade-actions {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* search_results.php */
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.result-row {
+  background: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  border-left: 4px solid transparent;
+}
+
+.result-row:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-left-color: var(--accent-color);
+}
+
+.row-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.row-img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.row-img.circle {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+.user-initial-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #0056b3;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.row-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+.row-info p {
+  margin: 5px 0 0 0;
+  font-size: 0.9rem;
+  color: #777;
+}
+.row-action {
+  margin-left: 20px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+.page-link {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #ddd;
+  color: #333;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.page-link:hover {
+  background: #f8f9fa;
+}
+.page-link.active {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+.page-link.disabled {
+  color: #ccc;
+  pointer-events: none;
+  background: #f9f9f9;
+}
+
+@media (max-width: 600px) {
+  .result-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .row-action {
+    align-self: flex-end;
+    margin-left: 0;
+  }
+}
+
+/* trade_details.php */
+.details-split {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+.details-col {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.coin-mini-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+.coin-mini-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.status-box {
+  text-align: center;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+.st-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+.st-accepted {
+  background: #d4edda;
+  color: #155724;
+}
+.st-completed {
+  background: #c3e6cb;
+  color: #155724;
+  border: 1px solid #28a745;
+}
+.st-declined,
+.st-cancelled {
+  background: #f8d7da;
+  color: #721c24;
 }

@@ -17,110 +17,6 @@ $countries = $stmt->fetchAll();
     <meta charset="UTF-8">
     <title>Add Coin</title>
     <link rel="stylesheet" href="assets/css/styles.css">
-    <style>
-        /* Layout */
-        .add-coin-layout {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 30px;
-            align-items: start;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            position: sticky;
-            top: 20px;
-        }
-
-        /* coin grid*/
-        .coin-selection-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        /* man coin card */
-        .coin-option-card {
-            background: white;
-            border: 2px solid #eee;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .coin-option-card:hover {
-            transform: translateY(-3px);
-            border-color: #ccc;
-        }
-
-        .coin-option-card.selected {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
-        }
-
-        .coin-option-img {
-            height: 150px;
-            background: #f9f9f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .coin-option-img img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        .coin-option-info {
-            padding: 10px;
-            text-align: center;
-        }
-
-        .coin-option-denom {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: #333;
-        }
-
-        .coin-option-title {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        /* form for details */
-        #details-form-container {
-            display: none;
-            margin-top: 30px;
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border-left: 5px solid var(--accent-color);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            background: #fff;
-            border-radius: 8px;
-            grid-column: 1 / -1;
-        }
-
-        @media (max-width: 768px) {
-            .add-coin-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -262,14 +158,12 @@ $countries = $stmt->fetchAll();
             }
         });
 
-        // --- 2. ПРИ ИЗБОР НА ГОДИНА ---
         yearSelect.addEventListener('change', function() {
-            const year = this.value; // Може да е празно (All Years)
+            const year = this.value;
             const countryId = countrySelect.value;
             loadCoins(countryId, year);
         });
 
-        // --- ПОМОЩНА ФУНКЦИЯ ЗА ЗАРЕЖДАНЕ ---
         function loadCoins(countryId, year) {
             coinList.innerHTML = 'Loading coins...';
             detailsForm.style.display = 'none';
@@ -282,9 +176,8 @@ $countries = $stmt->fetchAll();
             fetch(url)
                 .then(res => res.json())
                 .then(data => {
-                    coinList.innerHTML = ''; // Изчистваме
+                    coinList.innerHTML = '';
 
-                    // 1. Рендерираме монетите
                     if (data.length > 0) {
                         data.forEach(coin => {
                             const imgUrl = coin.catalog_image_front ? coin.catalog_image_front : 'assets/images/no-coin.png';
@@ -305,7 +198,6 @@ $countries = $stmt->fetchAll();
                         });
                     }
 
-                    // 2. ВИНАГИ добавяме картата "Request New Coin"
                     const addCard = document.createElement('div');
                     addCard.className = 'coin-option-card add-new-card';
                     addCard.innerHTML = `

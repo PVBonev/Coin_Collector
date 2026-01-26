@@ -1,9 +1,7 @@
 <?php
-// edit_coin.php
 session_start();
 require 'config/db.php';
 
-// Проверка за логнат потребител
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
@@ -12,7 +10,6 @@ if (!isset($_SESSION['user_id'])) {
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $user_id = $_SESSION['user_id'];
 
-// Взимаме данните за монетата (включително новите колони, чрез uc.*)
 $stmt = $pdo->prepare("
     SELECT uc.*, cc.title, cc.year 
     FROM user_coins uc 
@@ -45,7 +42,7 @@ if (!$coin) {
                 <h2 style="margin: 0;">Edit Details</h2>
                 <a href="user_coin_details.php?id=<?php echo $coin['id']; ?>" style="color: #666; font-size: 0.9rem;">Cancel</a>
             </div>
-            
+
             <p style="margin-top: -10px; margin-bottom: 20px; color: #666; font-weight: bold;">
                 <?php echo htmlspecialchars($coin['title']); ?> (<?php echo $coin['year']; ?>)
             </p>
@@ -94,7 +91,7 @@ if (!$coin) {
 
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
                     <h4 style="margin-top: 0; margin-bottom: 15px; color: #555; font-size: 0.95rem; text-transform: uppercase;">Acquisition Details</h4>
-                    
+
                     <div style="display: flex; gap: 15px;">
                         <div class="form-group" style="flex: 1;">
                             <label style="font-size: 0.85rem;">Purchase Price</label>
@@ -105,7 +102,7 @@ if (!$coin) {
                             <input type="date" name="purchase_date" value="<?php echo htmlspecialchars($coin['purchase_date']); ?>">
                         </div>
                     </div>
-                    
+
                     <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size: 0.85rem;">Acquired From (Location/Source)</label>
                         <input type="text" name="purchase_location" value="<?php echo htmlspecialchars($coin['purchase_location']); ?>" placeholder="e.g. eBay, Local Shop, Gift...">
@@ -117,7 +114,7 @@ if (!$coin) {
                 </div>
 
                 <hr style="margin: 25px 0;">
-                
+
                 <h4 style="margin-bottom: 5px;">Replace Photos</h4>
                 <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px;">Upload only if you want to replace your current images.</p>
 
@@ -138,4 +135,5 @@ if (!$coin) {
         </div>
     </div>
 </body>
+
 </html>

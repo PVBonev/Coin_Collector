@@ -2,7 +2,7 @@
 session_start();
 
 //if (isset($_SESSION['user_id'])) { //so we can log in with multiple user profiles from the samebrowser. This is for demo purposes only.
-//    header("Location: index.php");
+//    header("Location: index.php"); // note that if you open a new tab and login from new user, the previous tab will also be logged in as the new user.
 //    exit;
 //}
 ?>

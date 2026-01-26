@@ -2,6 +2,4 @@
 session_start();
 session_destroy();
 header("Location: ../countries.php");
-exit;//to test the codes
-?>
-
+exit; //to test the codes

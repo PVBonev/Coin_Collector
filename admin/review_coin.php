@@ -1,5 +1,4 @@
 <?php
-// admin/review_coin.php
 session_start();
 require '../config/db.php';
 
@@ -9,8 +8,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Взимаме детайлите за заявената монета
-// Тъй като правим SELECT cc.*, новите колони (weight, diameter и т.н.) идват автоматично
 $stmt = $pdo->prepare("
     SELECT cc.*, c.name as country_name 
     FROM catalog_coins cc
@@ -32,36 +29,6 @@ if (!$coin) {
     <meta charset="UTF-8">
     <title>Review Coin</title>
     <link rel="stylesheet" href="../assets/css/styles.css">
-    <style>
-        .review-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        .preview-images img {
-            max-width: 100%;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .action-bar {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            resize: vertical;
-        }
-    </style>
 </head>
 
 <body>
@@ -89,7 +56,7 @@ if (!$coin) {
                 <h3>Edit & Approve Details</h3>
                 <p style="color: #666; font-size: 0.9rem;">Clean up the data before publishing to the catalog.</p>
 
-                <form action="../actions/review_coin_process.php" method="POST" enctype="multipart/form-data"> 
+                <form action="../actions/review_coin_process.php" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="coin_id" value="<?php echo $coin['id']; ?>">
 
                     <div class="form-group">
@@ -124,7 +91,7 @@ if (!$coin) {
 
                     <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #eee;">
                         <h4 style="margin-top: 0; margin-bottom: 10px; color: #555; font-size: 0.9rem;">Technical Specifications</h4>
-                        
+
                         <div style="display: flex; gap: 10px;">
                             <div class="form-group" style="flex: 1;">
                                 <label style="font-size: 0.85rem;">Weight (g)</label>
@@ -151,7 +118,7 @@ if (!$coin) {
                         <label>Description</label>
                         <textarea name="description" rows="4"><?php echo htmlspecialchars($coin['description'] ?? ''); ?></textarea>
                     </div>
-                    
+
                     <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
                     <h4 style="margin-bottom: 10px;">Official Catalog Images</h4>
@@ -170,14 +137,14 @@ if (!$coin) {
                         <label>Catalog Photo (Back)</label>
                         <input type="file" name="admin_img_back" accept="image/*">
                     </div>
-                    
+
                     <div class="action-bar">
                         <button type="submit" name="action" value="approve" class="btn btn-accent" style="flex: 2; background: #28a745;">
-                            &#10003; Save & Publish
+                            Save & Publish
                         </button>
 
                         <button type="submit" name="action" value="reject" class="btn" style="flex: 1; background: #dc3545; color: white;">
-                            &#10005; Reject
+                            Reject
                         </button>
                     </div>
                 </form>

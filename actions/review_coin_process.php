@@ -6,20 +6,21 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     die("Access Denied");
 }
 
-function uploadAdminImage($file, $targetDir) {
+function uploadAdminImage($file, $targetDir)
+{
     if ($file['error'] === UPLOAD_ERR_NO_FILE) return null;
-    
+
     if ($file['error'] !== UPLOAD_ERR_OK) {
         throw new Exception("Upload error code: " . $file['error']);
     }
 
     $allowed = ['jpg', 'jpeg', 'png', 'webp'];
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    
+
     if (!in_array($ext, $allowed)) throw new Exception("Invalid file type.");
-    
+
     $filename = 'catalog_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-    
+
     if (move_uploaded_file($file['tmp_name'], $targetDir . $filename)) {
         return 'uploads/coins/' . $filename;
     }
@@ -55,11 +56,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     material = ?, period = ?, description = ?, 
                     weight = ?, diameter = ?, thickness = ?, mintage = ?,
                     is_approved = 1";
-            
+
             $params = [
-                $title, $denom, $year, 
-                $material, $period, $desc,
-                $weight, $diameter, $thickness, $mintage
+                $title,
+                $denom,
+                $year,
+                $material,
+                $period,
+                $desc,
+                $weight,
+                $diameter,
+                $thickness,
+                $mintage
             ];
 
             if ($new_front) {
@@ -78,18 +86,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute($params);
 
             $_SESSION['success'] = "Coin approved. Catalog updated successfully!";
-
         } elseif ($action === 'reject') {
             $stmt = $pdo->prepare("DELETE FROM catalog_coins WHERE id = ?");
             $stmt->execute([$coin_id]);
             $_SESSION['success'] = "Request rejected.";
         }
-
     } catch (Exception $e) {
         $_SESSION['error'] = "Error: " . $e->getMessage();
     }
-    
+
     header("Location: ../admin/dashboard.php");
     exit;
 }
-?>

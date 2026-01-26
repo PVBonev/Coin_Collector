@@ -1,5 +1,4 @@
 <?php
-// swap_request.php
 session_start();
 require 'config/db.php';
 
@@ -16,13 +15,11 @@ if ($receiver_id === 0 || $receiver_id == $sender_id) {
     die("Invalid trade partner.");
 }
 
-// 1. Взимаме инфо за партньора
 $stmtUser = $pdo->prepare("SELECT username FROM users WHERE id = ?");
 $stmtUser->execute([$receiver_id]);
 $receiver = $stmtUser->fetch();
 if (!$receiver) die("User not found.");
 
-// 2. Взимаме МОИТЕ свободни монети
 $stmtMy = $pdo->prepare("
     SELECT uc.id, cc.title, cc.denomination, cc.year, c.flag_image, uc.own_image_front, cc.catalog_image_front
     FROM user_coins uc
@@ -33,7 +30,6 @@ $stmtMy = $pdo->prepare("
 $stmtMy->execute([$sender_id]);
 $my_swap_coins = $stmtMy->fetchAll();
 
-// 3. Взимаме ТЕХНИТЕ свободни монети
 $stmtTheir = $pdo->prepare("
     SELECT uc.id, cc.title, cc.denomination, cc.year, c.flag_image, uc.own_image_front, cc.catalog_image_front
     FROM user_coins uc

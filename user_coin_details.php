@@ -130,14 +130,14 @@ $most_common_grade = $stmtGrades->fetch();
                 <div class="data-row">
                     <span class="data-label">Current Value</span>
                     <span class="data-value" style="color: var(--accent-color); font-weight: bold;">
-                        <?php echo $coin['price'] > 0 ? number_format($coin['price'], 2) . ' lv.' : '-'; ?>
+                        <?php echo $coin['price'] > 0 ? number_format($coin['price'], 2) . ' €' : '-'; ?>
                     </span>
                 </div>
 
                 <?php if ($coin['purchase_price'] > 0): ?>
                     <div class="data-row">
                         <span class="data-label">Paid Price</span>
-                        <span class="data-value"><?php echo number_format($coin['purchase_price'], 2); ?> lv.</span>
+                        <span class="data-value"><?php echo number_format($coin['purchase_price'], 2); ?> €</span>
                     </div>
                 <?php endif; ?>
 
@@ -239,14 +239,14 @@ $most_common_grade = $stmtGrades->fetch();
                         <div class="data-row">
                             <span class="data-label">Market Price (Avg)</span>
                             <span class="data-value" style="font-weight: bold;">
-                                <?php echo number_format($market_data['avg_price'], 2); ?> lv.
+                                <?php echo number_format($market_data['avg_price'], 2); ?> €
                             </span>
                         </div>
                         <div class="data-row">
                             <span class="data-label">Price Range</span>
                             <span class="data-value" style="font-size: 0.9rem;">
                                 <?php echo number_format($market_data['min_price'], 2); ?> -
-                                <?php echo number_format($market_data['max_price'], 2); ?> lv.
+                                <?php echo number_format($market_data['max_price'], 2); ?> €
                             </span>
                         </div>
                         <div style="margin-top: 10px; font-size: 0.8rem; color: #888; text-align: center;">

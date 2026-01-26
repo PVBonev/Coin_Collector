@@ -41,7 +41,7 @@ if (!isset($_SESSION['user_id'])) {
                 <br>
 
                 <a href="actions/export_csv.php" class="btn btn-accent" style="width: 100%; text-align: center; display: inline-block;">
-                    &#11015; Download CSV  &#11015;
+                    &#11015; Download CSV &#11015;
                 </a>
             </div>
 
@@ -64,7 +64,7 @@ if (!isset($_SESSION['user_id'])) {
                         <input type="file" name="csv_file" accept=".csv" required>
                     </div>
                     <button type="submit" class="btn" style="background: #28a745; color: white; width: 100%;">
-                        &#11014; Upload CSV &#11014; 
+                        &#11014; Upload CSV &#11014;
                     </button>
                 </form>
             </div>

@@ -27,68 +27,6 @@ ksort($continents);
     <meta charset="UTF-8">
     <title>Countries - Coin Collector</title>
     <link rel="stylesheet" href="assets/css/styles.css">
-    <style>
-        .controls-bar {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            flex: 2;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 10px 10px 10px 35px; 
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-        
-        .search-icon {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #888;
-        }
-
-        .filter-box {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .filter-box select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
-        .coin-title {
-            font-size: 1.1rem;
-            line-height: 1.3;
-            min-height: 2.6em; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            word-wrap: break-word; 
-            white-space: normal; 
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-    </style>
 </head>
 
 <body>
@@ -118,13 +56,13 @@ ksort($continents);
 
         <div class="coin-grid" id="countriesGrid">
             <?php foreach ($countries as $country): ?>
-                
-                <a href="country.php?id=<?php echo $country['id']; ?>" 
-                   class="country-item-link"
-                   data-name="<?php echo strtolower($country['name']); ?>" 
-                   data-continent="<?php echo htmlspecialchars($country['continent']); ?>"
-                   style="text-decoration: none; color: inherit;">
-                   
+
+                <a href="country.php?id=<?php echo $country['id']; ?>"
+                    class="country-item-link"
+                    data-name="<?php echo strtolower($country['name']); ?>"
+                    data-continent="<?php echo htmlspecialchars($country['continent']); ?>"
+                    style="text-decoration: none; color: inherit;">
+
                     <div class="coin-card">
                         <div class="flag-wrapper">
                             <?php if ($country['flag_image']): ?>
@@ -138,7 +76,7 @@ ksort($continents);
                             <div class="coin-title">
                                 <?php echo htmlspecialchars($country['name']); ?>
                             </div>
-                            
+
                             <div class="country-stats">
                                 <span style="color: var(--accent-color); font-weight: bold;">
                                     <?php echo $country['coin_count']; ?>
@@ -153,7 +91,7 @@ ksort($continents);
 
             <?php endforeach; ?>
         </div>
-        
+
         <div id="noResults" style="text-align: center; display: none; margin-top: 50px; color: #777;">
             <h3>No countries found matching your criteria.</h3>
         </div>
@@ -163,7 +101,7 @@ ksort($continents);
         function filterCountries() {
             const searchInput = document.getElementById('countrySearch').value.toLowerCase();
             const continentFilter = document.getElementById('continentFilter').value;
-            
+
             const items = document.querySelectorAll('.country-item-link');
             let visibleCount = 0;
 

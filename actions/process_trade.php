@@ -19,14 +19,14 @@ try {
     $trade = $stmt->fetch();
 
     if (!$trade) throw new Exception("Trade not found.");
-    
+
     if ($action === 'confirm_receipt') {
         if ($trade['status'] !== 'accepted') throw new Exception("Trade needs to be accepted first.");
 
         if ($trade['sender_id'] == $user_id) {
             $stmtUp = $pdo->prepare("UPDATE trades SET sender_confirmed = 1 WHERE id = ?");
             $stmtUp->execute([$trade_id]);
-            $trade['sender_confirmed'] = 1; 
+            $trade['sender_confirmed'] = 1;
         } elseif ($trade['receiver_id'] == $user_id) {
             $stmtUp = $pdo->prepare("UPDATE trades SET receiver_confirmed = 1 WHERE id = ?");
             $stmtUp->execute([$trade_id]);
@@ -55,7 +55,7 @@ try {
         } else {
             $_SESSION['success'] = "Receipt confirmed. Waiting for the other party.";
         }
-        
+
         $pdo->commit();
         header("Location: ../trade_details.php?id=" . $trade_id);
         exit;
@@ -69,7 +69,6 @@ try {
         $pdo->prepare("UPDATE trades SET status = 'accepted', updated_at = NOW() WHERE id = ?")->execute([$trade_id]);
         $_SESSION['success'] = "Trade accepted! Contact info revealed.";
         $redirectUrl = "../trade_details.php?id=" . $trade_id;
-
     } elseif ($action === 'counter') {
         if ($trade['receiver_id'] != $user_id) throw new Exception("Only receiver can counter.");
 
@@ -77,19 +76,18 @@ try {
 
         $pdo->prepare("UPDATE user_coins SET is_locked = 0 WHERE id IN (SELECT user_coin_id FROM trade_items WHERE trade_id = ?)")->execute([$trade_id]);
 
-        $pdo->commit(); 
+        $pdo->commit();
 
         header("Location: ../swap_request.php?receiver_id=" . $trade['sender_id']);
         exit;
-
     } elseif ($action === 'decline' || $action === 'cancel') {
         $newStatus = ($action === 'cancel') ? 'cancelled' : 'declined';
-        
+
         if ($action === 'cancel' && $trade['sender_id'] != $user_id) throw new Exception("Only sender can cancel.");
         if ($action === 'decline' && $trade['receiver_id'] != $user_id) throw new Exception("Only receiver can decline.");
 
         $pdo->prepare("UPDATE trades SET status = ?, updated_at = NOW() WHERE id = ?")->execute([$newStatus, $trade_id]);
-        
+
         $pdo->prepare("UPDATE user_coins SET is_locked = 0 WHERE id IN (SELECT user_coin_id FROM trade_items WHERE trade_id = ?)")->execute([$trade_id]);
 
         $_SESSION['success'] = "Trade " . $newStatus . ". Coins unlocked.";
@@ -99,7 +97,6 @@ try {
     $pdo->commit();
     header("Location: " . $redirectUrl);
     exit;
-
 } catch (Exception $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
@@ -108,4 +105,3 @@ try {
     header("Location: ../my_trades.php");
     exit;
 }
-?>

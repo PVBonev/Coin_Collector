@@ -89,9 +89,6 @@ $owners = $stmtUsers->fetchAll();
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($coin['title']); ?> - Details</title>
     <link rel="stylesheet" href="assets/css/styles.css">
-    <style>
-
-    </style>
 </head>
 
 <body>
@@ -210,10 +207,10 @@ $owners = $stmtUsers->fetchAll();
                         <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
                             <strong style="color: #555;">Market Value (Est.)</strong><br>
                             <span style="font-size: 1.2rem; font-weight: bold; color: #28a745;">
-                                <?php echo number_format($market['avg_price'], 2); ?> lv.
+                                <?php echo number_format($market['avg_price'], 2); ?> €.
                             </span>
                             <div style="font-size: 0.8rem; color: #888;">
-                                Range: <?php echo number_format($market['min_price'], 2); ?> - <?php echo number_format($market['max_price'], 2); ?> lv.
+                                Range: <?php echo number_format($market['min_price'], 2); ?> - <?php echo number_format($market['max_price'], 2); ?> €.
                             </div>
                         </div>
                     <?php else: ?>

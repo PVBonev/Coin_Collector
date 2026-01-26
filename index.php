@@ -14,7 +14,7 @@ $sqlCoins = "SELECT
             uc.id AS collection_id,
             uc.grade,
             uc.status,
-            uc.is_locked,        /* <--- ТОВА ЛИПСВАШЕ */
+            uc.is_locked,       
             uc.own_image_front,  
             cc.title,
             cc.year,
@@ -247,16 +247,16 @@ $top_periods = $stmtPeriods->fetchAll();
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Est. Value</div>
-                    <div class="stat-number text-green"><?php echo number_format($total_value, 2); ?> <small>lv.</small></div>
+                    <div class="stat-number text-green"><?php echo number_format($total_value, 2); ?> <small>€</small></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Total Spent</div>
-                    <div class="stat-number"><?php echo number_format($total_spent, 2); ?> <small>lv.</small></div>
+                    <div class="stat-number"><?php echo number_format($total_spent, 2); ?> <small>€</small></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Profit / Loss</div>
                     <div class="stat-number <?php echo $profit_class; ?>">
-                        <?php echo ($profit > 0 ? '+' : '') . number_format($profit, 2); ?>
+                        <?php echo ($profit > 0 ? '+' : '') . number_format($profit, 2) . ' €'; ?>
                     </div>
                 </div>
             </div>

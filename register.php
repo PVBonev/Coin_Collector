@@ -8,15 +8,17 @@ if (isset($_SESSION['user_id'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Register - Coin Collector</title>
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
+
 <body>
     <div class="login-wrapper">
         <div class="login-box" style="text-align: center;">
-            
+
             <div style="margin-bottom: 40px;">
                 <img src="Logo/logo_login.svg" alt="Coin Collector Logo" style="display:block; margin:0 auto 15px; width:clamp(120px, 15vw, 220px); height:auto;">
             </div>
@@ -24,7 +26,8 @@ if (isset($_SESSION['user_id'])) {
 
             <?php if (isset($_SESSION['error'])): ?>
                 <div style="color: var(--danger); margin-bottom: 15px; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;">
-                    <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
+                    <?php echo $_SESSION['error'];
+                    unset($_SESSION['error']); ?>
                 </div>
             <?php endif; ?>
 
@@ -61,4 +64,5 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
 </body>
+
 </html>

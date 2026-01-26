@@ -1,5 +1,4 @@
 <?php
-// search_results.php
 session_start();
 require 'config/db.php';
 
@@ -24,7 +23,6 @@ if ($type === 'users') {
     $countStmt->execute(["%$query%", $_SESSION['user_id'] ?? 0]);
     $total_results = $countStmt->fetchColumn();
 
-    // ПРОМЯНА ТУК: Добавихме profile_image в SELECT заявката
     $sql = "SELECT id, username, profile_image, created_at FROM users WHERE username LIKE ? AND id != ? LIMIT $limit OFFSET $offset";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(["%$query%", $_SESSION['user_id'] ?? 0]);
@@ -69,83 +67,7 @@ $total_pages = ceil($total_results / $limit);
     <title>Search Results: <?php echo htmlspecialchars($query); ?></title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <style>
-        .results-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .result-row {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border-left: 4px solid transparent;
-        }
-
-        .result-row:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-left-color: var(--accent-color);
-        }
-
-        .row-left { display: flex; align-items: center; gap: 20px; flex: 1; }
         
-        .row-img { width: 50px; height: 50px; object-fit: contain; border-radius: 4px; }
-        .row-img.circle { border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
-        
-        /* НОВО: Стил за инициала (кръгче с буква) */
-        .user-initial-circle {
-            width: 50px; height: 50px; border-radius: 50%; 
-            background: #0056b3; color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 1.2rem;
-            text-transform: uppercase;
-            flex-shrink: 0; /* Да не се смачква */
-        }
-
-        .row-info h3 { margin: 0; font-size: 1.1rem; color: #333; }
-        .row-info p { margin: 5px 0 0 0; font-size: 0.9rem; color: #777; }
-        .row-action { margin-left: 20px; }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        .page-link {
-            padding: 8px 16px;
-            background: white;
-            border: 1px solid #ddd;
-            color: #333;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-        .page-link:hover { background: #f8f9fa; }
-        .page-link.active {
-            background: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
-        }
-        .page-link.disabled {
-            color: #ccc;
-            pointer-events: none;
-            background: #f9f9f9;
-        }
-
-        @media (max-width: 600px) {
-            .result-row { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .row-action { align-self: flex-end; margin-left: 0; }
-        }
     </style>
 </head>
 <body>

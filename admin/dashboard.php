@@ -20,18 +20,13 @@ $requests = $stmt->fetchAll();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="../assets/css/styles.css">
-    <style>
-        .admin-table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
-        .admin-table th, .admin-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
-        .admin-table th { background-color: #f8f9fa; font-weight: bold; color: #333; }
-        .admin-table tr:hover { background-color: #f1f1f1; }
-        .btn-sm { padding: 5px 10px; font-size: 0.85rem; }
-    </style>
 </head>
+
 <body>
     <?php include '../includes/navbar.php'; ?>
 
@@ -40,7 +35,8 @@ $requests = $stmt->fetchAll();
 
         <?php if (isset($_SESSION['success'])): ?>
             <div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-                <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
+                <?php echo $_SESSION['success'];
+                unset($_SESSION['success']); ?>
             </div>
         <?php endif; ?>
 
@@ -80,4 +76,5 @@ $requests = $stmt->fetchAll();
         <?php endif; ?>
     </div>
 </body>
+
 </html>

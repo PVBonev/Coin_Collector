@@ -32,17 +32,19 @@ $coins = $stmt->fetchAll();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($country['name']); ?> - Coin Catalog</title>
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
+
 <body>
     <?php include 'includes/navbar.php'; ?>
 
     <div class="container">
         <div class="country-header">
-            <?php if($country['flag_image']): ?>
+            <?php if ($country['flag_image']): ?>
                 <img src="<?php echo htmlspecialchars($country['flag_image']); ?>" class="country-flag-large">
             <?php endif; ?>
             <div>
@@ -51,7 +53,7 @@ $coins = $stmt->fetchAll();
                     <?php echo count($coins); ?> coin types in catalog
                 </p>
             </div>
-            
+
             <div style="margin-left: auto;">
                 <a href="add_coin.php?country_id=<?php echo $country['id']; ?>" class="btn btn-accent">
                     + Add Coin from <?php echo htmlspecialchars($country['name']); ?>
@@ -63,18 +65,18 @@ $coins = $stmt->fetchAll();
             <div class="catalog-grid">
                 <?php foreach ($coins as $coin): ?>
                     <a href="catalog_coin.php?id=<?php echo $coin['id']; ?>" class="catalog-card">
-                        
+
                         <?php if ($coin['is_owned'] > 0): ?>
                             <div class="owned-badge" title="You own this coin">✓</div>
                         <?php endif; ?>
 
                         <div class="card-img">
-                            <?php 
-                                $img = $coin['catalog_image_front'] ? $coin['catalog_image_front'] : 'assets/images/no-coin.png';
+                            <?php
+                            $img = $coin['catalog_image_front'] ? $coin['catalog_image_front'] : 'assets/images/no-coin.png';
                             ?>
                             <img src="<?php echo htmlspecialchars($img); ?>" alt="Coin">
                         </div>
-                        
+
                         <div class="card-body">
                             <div class="card-year"><?php echo $coin['year']; ?></div>
                             <div class="card-denom"><?php echo htmlspecialchars($coin['denomination']); ?></div>
@@ -92,4 +94,5 @@ $coins = $stmt->fetchAll();
         <?php endif; ?>
     </div>
 </body>
+
 </html>
