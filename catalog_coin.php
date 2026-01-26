@@ -107,7 +107,13 @@ $owners = $stmtUsers->fetchAll();
                 <h3 style="margin: 5px 0; color: var(--accent-color);"><?php echo htmlspecialchars($coin['denomination']); ?> • <?php echo $coin['year']; ?></h3>
             </div>
 
-            <div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                    <a href="admin/edit_catalog_coin.php?id=<?php echo $coin['id']; ?>" class="btn" style="background: #1e2a38; font-size: 0.9rem;">
+                        Edit Catalog Data
+                    </a>
+                <?php endif; ?>
+
                 <?php if ($my_copy): ?>
                     <a href="user_coin_details.php?id=<?php echo $my_copy['id']; ?>" class="btnblk" style="background: #d4af37;"> View Your Coin</a>
                 <?php else: ?>
