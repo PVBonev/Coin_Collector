@@ -78,7 +78,7 @@ try {
 
         $pdo->commit();
 
-        header("Location: ../swap_request.php?receiver_id=" . $trade['sender_id']);
+        header("Location: ../swap_request.php?receiver_id=" . $trade['sender_id'] . "&counter_id=" . $trade_id);
         exit;
     } elseif ($action === 'decline' || $action === 'cancel') {
         $newStatus = ($action === 'cancel') ? 'cancelled' : 'declined';

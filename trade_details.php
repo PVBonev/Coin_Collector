@@ -49,30 +49,32 @@ foreach ($items as $item) {
         $offered_items[] = $item;
     } else {
         $requested_items[] = $item;
-        $total_price += $item['price']; 
+        $total_price += $item['price'];
     }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Trade #<?php echo $trade_id; ?></title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <style>
-        
+
     </style>
 </head>
+
 <body>
     <?php include 'includes/navbar.php'; ?>
 
     <div class="container">
         <a href="my_trades.php" style="color: #666; text-decoration: none;">&larr; Back to Trades</a>
-        
+
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
             <h1>
-                <?php echo ($trade['type'] == 'sell') ? 'Purchase Request' : 'Swap Trade'; ?> 
+                <?php echo ($trade['type'] == 'sell') ? 'Purchase Request' : 'Swap Trade'; ?>
                 <small style="font-size: 1rem; color: #777;">#<?php echo $trade_id; ?> with <?php echo htmlspecialchars($partner_name); ?></small>
             </h1>
             <div class="status-box st-<?php echo $trade['status']; ?>" style="margin-bottom: 0;">
@@ -85,21 +87,21 @@ foreach ($items as $item) {
                 <h3 style="margin-top: 0; color: #2e7d32;">Offer Accepted!</h3>
                 <p>Contact <strong><?php echo htmlspecialchars($partner_name); ?></strong> to arrange <?php echo ($trade['type'] == 'sell') ? 'payment & ' : ''; ?>delivery.</p>
                 <p><strong>Email:</strong> <a href="mailto:<?php echo $partner_email; ?>"><?php echo $partner_email; ?></a></p>
-                
+
                 <hr style="border: 0; border-top: 1px solid #c8e6c9; margin: 15px 0;">
-                
+
                 <p style="font-size: 0.9rem; color: #555; margin-bottom: 10px;"><strong>Final Step:</strong> Confirm when the transaction is physically complete.</p>
-                
+
                 <div style="display: flex; gap: 20px; align-items: center;">
-                    <?php 
-                        $i_confirmed = ($am_i_sender && $trade['sender_confirmed']) || (!$am_i_sender && $trade['receiver_confirmed']);
-                        $they_confirmed = ($am_i_sender && $trade['receiver_confirmed']) || (!$am_i_sender && $trade['sender_confirmed']);
-                        
-                        if ($trade['type'] == 'sell') {
-                            $btnText = $am_i_sender ? "I Received the Coin" : "I Received Payment";
-                        } else {
-                            $btnText = "I Received the Items";
-                        }
+                    <?php
+                    $i_confirmed = ($am_i_sender && $trade['sender_confirmed']) || (!$am_i_sender && $trade['receiver_confirmed']);
+                    $they_confirmed = ($am_i_sender && $trade['receiver_confirmed']) || (!$am_i_sender && $trade['sender_confirmed']);
+
+                    if ($trade['type'] == 'sell') {
+                        $btnText = $am_i_sender ? "I Received the Coin" : "I Received Payment";
+                    } else {
+                        $btnText = "I Received the Items";
+                    }
                     ?>
 
                     <?php if ($i_confirmed): ?>
@@ -123,7 +125,7 @@ foreach ($items as $item) {
         <?php endif; ?>
 
         <div class="details-split">
-            
+
             <div class="details-col">
                 <?php if ($trade['type'] == 'sell'): ?>
                     <h3 style="border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-top: 0;">Payment</h3>
@@ -157,12 +159,12 @@ foreach ($items as $item) {
 
             <div class="details-col">
                 <h3 style="border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-top: 0;">
-                    <?php 
-                        if ($trade['type'] == 'sell') {
-                            echo 'Items being Sold';
-                        } else {
-                            echo ($am_i_sender) ? 'You Get' : $partner_name . ' Gets';
-                        }
+                    <?php
+                    if ($trade['type'] == 'sell') {
+                        echo 'Items being Sold';
+                    } else {
+                        echo ($am_i_sender) ? 'You Get' : $partner_name . ' Gets';
+                    }
                     ?>
                 </h3>
                 <?php foreach ($requested_items as $item): ?>
@@ -172,7 +174,7 @@ foreach ($items as $item) {
                         <div>
                             <strong><?php echo htmlspecialchars($item['title']); ?></strong><br>
                             <small><?php echo $item['year']; ?> • <?php echo htmlspecialchars($item['denomination']); ?></small>
-                            <?php if($trade['type'] == 'sell'): ?>
+                            <?php if ($trade['type'] == 'sell'): ?>
                                 <br><span style="color: #28a745; font-weight: bold; font-size: 0.85rem;"><?php echo number_format($item['price'], 2); ?> €</span>
                             <?php endif; ?>
                         </div>
@@ -183,15 +185,31 @@ foreach ($items as $item) {
 
         <?php if ($trade['status'] == 'pending'): ?>
             <div style="margin-top: 30px; text-align: center; padding: 20px; background: #fff; border-radius: 8px;">
-                
+
                 <?php if (!$am_i_sender): ?>
-                    <p><strong><?php echo htmlspecialchars($partner_name); ?></strong> wants to buy these items.</p>
-                    <div style="display: flex; gap: 10px; justify-content: center;">
+                    <p>
+                        <strong><?php echo htmlspecialchars($partner_name); ?></strong>
+                        <?php echo ($trade['type'] == 'sell') ? 'wants to buy these items.' : 'proposes this swap.'; ?>
+                    </p>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+
                         <form action="actions/process_trade.php" method="POST">
                             <input type="hidden" name="trade_id" value="<?php echo $trade_id; ?>">
-                            <button type="submit" name="action" value="accept" class="btn" style="background: #28a745;">Accept Sale</button>
+                            <button type="submit" name="action" value="accept" class="btn" style="background: #28a745;">
+                                <?php echo ($trade['type'] == 'sell') ? 'Accept Sale' : 'Accept Swap'; ?>
+                            </button>
                         </form>
-                        
+
+                        <?php if ($trade['type'] == 'swap'): ?>
+                            <form action="actions/process_trade.php" method="POST">
+                                <input type="hidden" name="trade_id" value="<?php echo $trade_id; ?>">
+                                <button type="submit" name="action" value="counter" class="btn" style="background: #d4af37;">
+                                    Make Counteroffer
+                                </button>
+                            </form>
+                        <?php endif; ?>
+
                         <form action="actions/process_trade.php" method="POST">
                             <input type="hidden" name="trade_id" value="<?php echo $trade_id; ?>">
                             <button type="submit" name="action" value="decline" class="btn" style="background: #dc3545;">Decline</button>
@@ -199,7 +217,7 @@ foreach ($items as $item) {
                     </div>
 
                 <?php else: ?>
-                    <p>Waiting for seller confirmation.</p>
+                    <p>Waiting for partner's response.</p>
                     <form action="actions/process_trade.php" method="POST">
                         <input type="hidden" name="trade_id" value="<?php echo $trade_id; ?>">
                         <button type="submit" name="action" value="cancel" class="btn" style="background: #6c757d;">Cancel Request</button>
@@ -212,4 +230,5 @@ foreach ($items as $item) {
     <?php include 'includes/footer.php'; ?>
 
 </body>
+
 </html>
