@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  # php + apache container
+  web:
+    build: .             # uses the Dockerfile in the current directory
+    ports:
+      - "8000:80"        # thats where itll open the webserver
+    volumes:
+      - .:/var/www/html  # changes in the project files will be reflected in the container
+    depends_on:
+      - db               # waits for the db container to be ready
+
+  # DB container for MySQL
   db:
     image: mysql:8.0
     container_name: coin_collector_db
@@ -11,10 +22,10 @@ services:
       MYSQL_PASSWORD: 'password'
       MYSQL_ROOT_PASSWORD: 'root_password'
     ports:
-      - '3306:3306' #opens the port for external access w dbeaver
+      - '3306:3306' 
     volumes:
-      - db_data:/var/lib/mysql #save data persistently - even if container is stopped
-      - ./DB:/docker-entrypoint-initdb.d #loads initial sql files from DB folder to container on first run
+      - db_data:/var/lib/mysql 
+      - ./DB:/docker-entrypoint-initdb.d 
 
 volumes:
   db_data:

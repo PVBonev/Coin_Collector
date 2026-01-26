@@ -1,11 +1,15 @@
 <?php
-$host = '127.0.0.1';
+
+//instead of 127.0.0.1 we use the service name from docker-compose
+$host = 'db'; 
+
 $db   = 'coin_collector_db';
-$user = 'user';
-$pass = 'password';
+$user = 'user';     // must match docker-compose environment
+$pass = 'password'; // must match docker-compose environment
 $charset = 'utf8mb4';
 
-$dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

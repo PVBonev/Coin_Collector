@@ -207,9 +207,6 @@ $coins = $stmt->fetchAll();
                 <div class="profile-meta">
                     Member since <?php echo date('F Y', strtotime($user['created_at'])); ?>
                 </div>
-                <a href="mailto:<?php echo htmlspecialchars($user['email']); ?>?subject=Coin Swap Request from CoinCollector" class="btn-contact">
-                    &#9993; Contact User
-                </a>
             </div>
         </div>
 
