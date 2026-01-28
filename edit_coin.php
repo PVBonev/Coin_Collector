@@ -22,6 +22,10 @@ $coin = $stmt->fetch();
 if (!$coin) {
     die("Coin not found in your collection.");
 }
+
+$stmtGallery = $pdo->prepare("SELECT * FROM user_coin_images WHERE user_coin_id = ?");
+$stmtGallery->execute([$id]);
+$gallery_images = $stmtGallery->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -128,6 +132,24 @@ if (!$coin) {
                         <label>Back Side</label>
                         <input type="file" name="img_back" accept="image/*">
                     </div>
+                </div>
+                <?php if (count($gallery_images) > 0): ?>
+                    <h4 style="margin-bottom: 10px;">Manage Gallery</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <?php foreach ($gallery_images as $img): ?>
+                            <div style="position: relative; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+                                <img src="<?php echo htmlspecialchars($img['image_path']); ?>" style="height: 60px;">
+                                <label style="display: block; font-size: 0.8rem; color: #dc3545; cursor: pointer; text-align: center; margin-top: 5px;">
+                                    <input type="checkbox" name="delete_gallery[]" value="<?php echo $img['id']; ?>"> Delete
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="form-group">
+                    <label>Add More Photos</label>
+                    <input type="file" name="new_gallery[]" multiple accept="image/*">
                 </div>
 
                 <button type="submit" class="btn btn-accent" style="width: 100%; margin-top: 10px; font-weight: bold;">Save Changes</button>

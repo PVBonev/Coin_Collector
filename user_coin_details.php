@@ -60,6 +60,13 @@ $stmtGrades = $pdo->prepare("
 ");
 $stmtGrades->execute([$catalog_id]);
 $most_common_grade = $stmtGrades->fetch();
+
+// ... (след заявките за coin, market_data и т.н.)
+
+// Fetch Gallery Images
+$stmtGallery = $pdo->prepare("SELECT * FROM user_coin_images WHERE user_coin_id = ? ORDER BY id ASC");
+$stmtGallery->execute([$user_coin_id]);
+$gallery_images = $stmtGallery->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -169,6 +176,21 @@ $most_common_grade = $stmtGrades->fetch();
                         <?php echo $coin['private_notes'] ? nl2br(htmlspecialchars($coin['private_notes'])) : 'No notes added.'; ?>
                     </p>
                 </div>
+
+                <?php if (count($gallery_images) > 0): ?>
+                    <div style="margin-top: 20px; margin-bottom: 20px;">
+                        <h3 style="margin-top: 0; color: #555; border-bottom: 1px solid #eee; padding-bottom: 10px;">Additional Photos</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <?php foreach ($gallery_images as $img): ?>
+                                <a href="<?php echo htmlspecialchars($img['image_path']); ?>" target="_blank">
+                                    <img src="<?php echo htmlspecialchars($img['image_path']); ?>"
+                                        style="height: 100px; width: auto; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
             </div>
 
             <div class="details-card" style="background: #fdfdfd;">
