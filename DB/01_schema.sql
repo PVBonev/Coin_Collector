@@ -120,3 +120,11 @@ CREATE TABLE IF NOT EXISTS trade_items (
     FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE CASCADE,
     FOREIGN KEY (user_coin_id) REFERENCES user_coins(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS user_coin_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_coin_id INT NOT NULL,
+    image_path VARCHAR(255) NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_coin_id) REFERENCES user_coins(id) ON DELETE CASCADE
+);

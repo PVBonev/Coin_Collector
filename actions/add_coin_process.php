@@ -117,6 +117,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $img_front,
             $img_back
         ]);
+                
+        $new_user_coin_id = $pdo->lastInsertId(); // Взимаме ID-то на току-що създадената монета
+
+        // ЛОГИКА ЗА ДОПЪЛНИТЕЛНИ СНИМКИ
+        if (!empty($_FILES['gallery']['name'][0])) {
+            $total_files = count($_FILES['gallery']['name']);
+            
+            $stmtGallery = $pdo->prepare("INSERT INTO user_coin_images (user_coin_id, image_path) VALUES (?, ?)");
+
+            for ($i = 0; $i < $total_files; $i++) {
+                if ($_FILES['gallery']['error'][$i] === UPLOAD_ERR_OK) {
+                    
+                    // Създаваме временен масив за файла, за да ползваме функцията uploadImage
+                    $tempFile = [
+                        'name'     => $_FILES['gallery']['name'][$i],
+                        'type'     => $_FILES['gallery']['type'][$i],
+                        'tmp_name' => $_FILES['gallery']['tmp_name'][$i],
+                        'error'    => $_FILES['gallery']['error'][$i],
+                        'size'     => $_FILES['gallery']['size'][$i]
+                    ];
+                    
+                    try {
+                        // Ползваме същата твоя функция uploadImage!
+                        $gallery_path = uploadImage($tempFile, $uploadDir);
+                        if ($gallery_path) {
+                            $stmtGallery->execute([$new_user_coin_id, $gallery_path]);
+                        }
+                    } catch (Exception $e) {
+                        // Ако една снимка гръмне, не спираме целия процес, просто я пропускаме
+                        continue; 
+                    }
+                }
+            }
+        }
 
         $pdo->commit();
         $_SESSION['success'] = "Coin added successfully!";

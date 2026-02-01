@@ -111,6 +111,12 @@ $countries = $stmt->fetchAll();
                             </div>
                         </div>
 
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>Additional Gallery Images (Optional)</label>
+                            <input type="file" name="gallery[]" multiple accept="image/*" style="padding: 10px; background: #f9f9f9; border: 1px dashed #ccc; width: 100%;">
+                            <small style="color: #666;">You can select multiple files by holding Ctrl/Cmd.</small>
+                        </div>
+
                         <button type="submit" class="btn btn-accent" style="width: 100%;">Add to Collection</button>
                     </form>
                 </div>
