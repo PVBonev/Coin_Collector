@@ -48,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $pdo->beginTransaction();
 
-        // Снимки (вкл. новата за ръба)
         $img_front = uploadImage($_FILES['img_front'] ?? null, $uploadDir);
         $img_back  = uploadImage($_FILES['img_back'] ?? null, $uploadDir);
         $img_edge  = uploadImage($_FILES['img_edge'] ?? null, $uploadDir);
