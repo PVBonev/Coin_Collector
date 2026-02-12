@@ -1,5 +1,4 @@
 <?php
-// create_catalog_coin.php
 session_start();
 require 'config/db.php';
 
@@ -8,11 +7,13 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-//if user comes from add_coin with a chosen country, preselect it
 $pre_country_id = isset($_GET['country_id']) ? (int)$_GET['country_id'] : '';
 
 $stmt = $pdo->query("SELECT id, name FROM countries ORDER BY name ASC");
 $countries = $stmt->fetchAll();
+
+$stmtMat = $pdo->query("SELECT id, name, symbol FROM materials ORDER BY name ASC");
+$materials = $stmtMat->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -22,6 +23,26 @@ $countries = $stmt->fetchAll();
     <meta charset="UTF-8">
     <title>Request New Coin</title>
     <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        .composition-row {
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .remove-material-btn {
+            background: #dc3545; 
+            color: white; 
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .remove-material-btn:hover {
+            background: #c82333;
+        }
+    </style>
 </head>
 
 <body>
@@ -34,7 +55,7 @@ $countries = $stmt->fetchAll();
                 This coin will be added to your collection immediately and sent for approval to the global catalog.
             </p>
 
-            <form action="actions/add_coin_process.php" method="POST" enctype="multipart/form-data">
+            <form action="actions/add_coin_process.php" method="POST" enctype="multipart/form-data" id="newCoinForm">
 
                 <div class="form-group">
                     <label>Country *</label>
@@ -64,15 +85,36 @@ $countries = $stmt->fetchAll();
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Material (Optional)</label>
-                        <input type="text" name="material" placeholder="e.g. Silver .925, Copper-Nickel">
+                <div class="form-group">
+                    <label>Period (Optional)</label>
+                    <input type="text" name="period" placeholder="e.g. People's Republic">
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
+                    <h4 style="margin-top: 0; margin-bottom: 15px; color: var(--accent-color);">Composition (Optional)</h4>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: -10px; margin-bottom: 15px;">
+                        Specify the metals used. The total percentage must equal exactly 100%. Leave empty if unknown.
+                    </p>
+                    
+                    <div id="composition-container">
+                        <div class="composition-row">
+                            <select name="material_id[]" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="">-- Select Metal --</option>
+                                <?php foreach ($materials as $mat): ?>
+                                    <option value="<?php echo $mat['id']; ?>">
+                                        <?php echo htmlspecialchars($mat['name']); ?> 
+                                        <?php echo $mat['symbol'] ? '('.htmlspecialchars($mat['symbol']).')' : ''; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <input type="number" step="0.01" name="material_percentage[]" placeholder="%" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;" max="100" min="0.01">
+                            <button type="button" class="remove-material-btn" onclick="this.parentElement.remove()">X</button>
+                        </div>
                     </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>Period (Optional)</label>
-                        <input type="text" name="period" placeholder="e.g. People's Republic">
-                    </div>
+                    
+                    <button type="button" id="add-material-btn" class="btn" style="background: #e2e8f0; color: #333; font-size: 0.85rem; padding: 5px 10px; margin-top: 5px;">
+                        + Add another metal
+                    </button>
                 </div>
 
                 <div style="display: flex; gap: 10px;">
@@ -131,6 +173,12 @@ $countries = $stmt->fetchAll();
                     <label>My Photo (Back)</label>
                     <input type="file" name="img_back" accept="image/*">
                 </div>
+                
+                <div class="form-group">
+                    <label>My Photo (Edge)</label>
+                    <input type="file" name="img_edge" accept="image/*">
+                    <small>Optional: Photo of the coin's edge.</small>
+                </div>
 
                 <input type="hidden" name="is_manual" value="1">
 
@@ -138,8 +186,56 @@ $countries = $stmt->fetchAll();
             </form>
         </div>
     </div>
+
+    <script>
+        const materialOptions = `
+            <option value="">-- Select Metal --</option>
+            <?php foreach ($materials as $mat): ?>
+                <option value="<?php echo $mat['id']; ?>">
+                    <?php echo addslashes(htmlspecialchars($mat['name'])); ?> 
+                    <?php echo $mat['symbol'] ? '('.addslashes(htmlspecialchars($mat['symbol'])).')' : ''; ?>
+                </option>
+            <?php endforeach; ?>
+        `;
+
+        document.getElementById('add-material-btn').addEventListener('click', function() {
+            const container = document.getElementById('composition-container');
+            const row = document.createElement('div');
+            row.className = 'composition-row';
+            row.innerHTML = `
+                <select name="material_id[]" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    ${materialOptions}
+                </select>
+                <input type="number" step="0.01" name="material_percentage[]" placeholder="%" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;" max="100" min="0.01">
+                <button type="button" class="remove-material-btn" onclick="this.parentElement.remove()">X</button>
+            `;
+            container.appendChild(row);
+        });
+
+        document.getElementById('newCoinForm').addEventListener('submit', function(e) {
+            let totalPercentage = 0;
+            let hasMaterials = false;
+            
+            const selects = document.querySelectorAll('select[name="material_id[]"]');
+            const percentages = document.querySelectorAll('input[name="material_percentage[]"]');
+            
+            for (let i = 0; i < selects.length; i++) {
+                if (selects[i].value !== "") {
+                    hasMaterials = true;
+                    let pValue = parseFloat(percentages[i].value);
+                    if (!isNaN(pValue)) {
+                        totalPercentage += pValue;
+                    }
+                }
+            }
+
+            if (hasMaterials && Math.abs(totalPercentage - 100) > 0.01) {
+                e.preventDefault(); 
+                alert("Error: The total composition must be exactly 100%. Current total is " + totalPercentage.toFixed(2) + "%.");
+            }
+        });
+    </script>
+
     <?php include 'includes/footer.php'; ?>
-
 </body>
-
 </html>

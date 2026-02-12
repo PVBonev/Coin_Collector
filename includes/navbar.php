@@ -15,6 +15,8 @@ $pathPrefix = file_exists(__DIR__ . '/../config/db.php') && !file_exists('config
 
                 <a href="<?php echo $pathPrefix; ?>countries.php" style="color: white; text-decoration: none;">Countries</a>
                 <a href="<?php echo $pathPrefix; ?>index.php" style="color: white; text-decoration: none;">Dashboard</a>
+                <a href="<?php echo $pathPrefix; ?>my_trades.php" style="color: white; text-decoration: none;">Trades</a>
+
 
                 <?php
                 $searchType = isset($_GET['type']) ? $_GET['type'] : 'coins';
@@ -40,21 +42,8 @@ $pathPrefix = file_exists(__DIR__ . '/../config/db.php') && !file_exists('config
                     $pending_count = 0;
                 }
                 ?>
-                <a href="<?php echo $pathPrefix; ?>my_trades.php" style="position: relative; text-decoration: none; margin-right: 10px; display: flex; align-items: center;" title="Trade Notifications">
-                    <span style="font-size: 1.4rem; color: white;">&#128276;</span> 
-                    <?php if ($pending_count > 0): ?>
-                        <span style="
-                            position: absolute; top: -5px; right: -5px;
-                            background-color: #dc3545; color: white;
-                            border-radius: 50%; padding: 2px 5px;
-                            font-size: 0.7rem; font-weight: bold;
-                            border: 1px solid var(--primary-color);
-                            line-height: 1; min-width: 15px; text-align: center;
-                        ">
-                            <?php echo $pending_count; ?>
-                        </span>
-                    <?php endif; ?>
-                </a>
+
+                
 
                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                     <a href="<?php echo $pathPrefix; ?>admin/dashboard.php" style="color: #ffc107; font-weight: bold; text-decoration: none;">Admin Panel</a>

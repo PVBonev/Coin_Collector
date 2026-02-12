@@ -1,7 +1,7 @@
 <?php
-// index.php
 session_start();
 require 'config/db.php';
+require_once 'includes/metal_price_helper.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -10,7 +10,6 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-//tab collection data
 $sqlCoins = "SELECT 
             uc.id AS collection_id,
             uc.grade,
@@ -33,8 +32,45 @@ $stmt = $pdo->prepare($sqlCoins);
 $stmt->execute([$user_id]);
 $my_coins = $stmt->fetchAll();
 
+$metalPrices = getMetalPrices();
 
-//tab statistics data
+$sqlMetals = "
+    SELECT 
+        m.symbol,
+        SUM(cc.weight * (comp.percentage / 100)) as total_grams
+    FROM user_coins uc
+    JOIN catalog_coins cc ON uc.catalog_coin_id = cc.id
+    JOIN coin_composition comp ON cc.id = comp.catalog_coin_id
+    JOIN materials m ON comp.material_id = m.id
+    WHERE uc.user_id = ? AND m.is_precious = 1
+    GROUP BY m.symbol
+";
+
+$stmtM = $pdo->prepare($sqlMetals);
+$stmtM->execute([$user_id]);
+$userMetals = $stmtM->fetchAll(PDO::FETCH_KEY_PAIR); // returns array ['Au' => 12.5, 'Ag' => 50.2]
+
+$meltValueTotal = 0;
+$goldValue = 0;
+$silverValue = 0;
+
+// Gold (Au) -> API Symbol XAU
+if (isset($userMetals['Au']) && isset($metalPrices['XAU'])) {
+    $goldGrams = $userMetals['Au'];
+    $goldPrice = $metalPrices['XAU']['price_gram'];
+    $goldValue = $goldGrams * $goldPrice;
+    $meltValueTotal += $goldValue;
+}
+
+// Silver (Ag) -> API Symbol XAG
+if (isset($userMetals['Ag']) && isset($metalPrices['XAG'])) {
+    $silverGrams = $userMetals['Ag'];
+    $silverPrice = $metalPrices['XAG']['price_gram'];
+    $silverValue = $silverGrams * $silverPrice;
+    $meltValueTotal += $silverValue;
+}
+
+// Statistics 
 $stmtKPI = $pdo->prepare("
     SELECT 
         COUNT(*) as total_coins,
@@ -54,7 +90,7 @@ $total_spent = $kpi['total_spent'] ?: 0;
 $profit = $total_value - $total_spent;
 $profit_class = $profit >= 0 ? 'text-green' : 'text-red';
 
-//pie chart
+// Pie chart status
 $stmtStatus = $pdo->prepare("SELECT status, COUNT(*) as count FROM user_coins WHERE user_id = ? GROUP BY status");
 $stmtStatus->execute([$user_id]);
 $status_data = $stmtStatus->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -84,6 +120,7 @@ if ($total_coins > 0) {
     $pie_gradient = '#eee 0% 100%';
 }
 
+// Top Countries
 $stmtCountries = $pdo->prepare("
     SELECT c.name, COUNT(*) as count, c.flag_image
     FROM user_coins uc
@@ -96,6 +133,7 @@ $stmtCountries = $pdo->prepare("
 $stmtCountries->execute([$user_id]);
 $top_countries = $stmtCountries->fetchAll();
 
+// Top Periods
 $stmtPeriods = $pdo->prepare("
     SELECT cc.period, COUNT(*) as count
     FROM user_coins uc
@@ -116,6 +154,124 @@ $top_periods = $stmtPeriods->fetchAll();
     <title>Dashboard - Coin Collector</title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <style>
+        /* new dashboard layout... we dont bother changing the original styles in the styles.css */
+
+        .dashboard-summary {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .portfolio-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .portfolio-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .portfolio-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .portfolio-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .melt-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid #d4af37;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .melt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .melt-total {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .metal-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .metal-row:last-child {
+            border-bottom: none;
+        }
+
+        .metal-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+
+        .icon-gold {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .icon-silver {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .metal-info small {
+            display: block;
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .pie-chart {
             width: 160px;
             height: 160px;
@@ -124,8 +280,10 @@ $top_periods = $stmtPeriods->fetchAll();
             position: relative;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        .hidden { display: none !important; }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -160,7 +318,7 @@ $top_periods = $stmtPeriods->fetchAll();
         <?php endif; ?>
 
         <div id="tab-collection" class="tab-content active">
-            
+
             <div class="controls-bar" style="margin-bottom: 20px;">
                 <div class="search-box">
                     <span class="search-icon">&#128269;</span>
@@ -185,11 +343,11 @@ $top_periods = $stmtPeriods->fetchAll();
                 <div class="collection-grid" id="collectionGrid">
                     <?php foreach ($my_coins as $coin): ?>
 
-                        <div class="coin-card <?php echo $coin['is_locked'] ? 'locked' : ''; ?>" 
-                             data-title="<?php echo strtolower(htmlspecialchars($coin['title'])); ?>"
-                             data-country="<?php echo strtolower(htmlspecialchars($coin['country_name'])); ?>"
-                             data-year="<?php echo $coin['year']; ?>"
-                             data-added="<?php echo strtotime($coin['added_at']); ?>">
+                        <div class="coin-card <?php echo $coin['is_locked'] ? 'locked' : ''; ?>"
+                            data-title="<?php echo strtolower(htmlspecialchars($coin['title'])); ?>"
+                            data-country="<?php echo strtolower(htmlspecialchars($coin['country_name'])); ?>"
+                            data-year="<?php echo $coin['year']; ?>"
+                            data-added="<?php echo strtotime($coin['added_at']); ?>">
 
                             <?php if ($coin['is_locked']): ?>
                                 <div class="lock-overlay">&#128274;</div>
@@ -256,7 +414,7 @@ $top_periods = $stmtPeriods->fetchAll();
 
                     <?php endforeach; ?>
                 </div>
-                
+
                 <div id="noResults" style="text-align: center; display: none; padding: 40px; color: #777;">
                     <h3>No coins found.</h3>
                 </div>
@@ -270,23 +428,92 @@ $top_periods = $stmtPeriods->fetchAll();
         </div>
 
         <div id="tab-stats" class="tab-content">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Total Coins</div>
-                    <div class="stat-number"><?php echo number_format($total_coins); ?></div>
+
+            <div class="dashboard-summary">
+
+                <div class="portfolio-card">
+                    <h3 style="margin: 0; color: #333;">Portfolio Overview</h3>
+                    <div class="portfolio-grid">
+                        <div class="portfolio-item">
+                            <div class="portfolio-label">Total Coins</div>
+                            <div class="portfolio-value"><?php echo number_format($total_coins); ?></div>
+                        </div>
+
+                        <div class="portfolio-item">
+                            <div class="portfolio-label">Est. Value</div>
+                            <div class="portfolio-value text-green">
+                                <?php echo number_format($total_value, 2); ?> <small>€</small>
+                            </div>
+                        </div>
+
+                        <div class="portfolio-item">
+                            <div class="portfolio-label">Total Spent</div>
+                            <div class="portfolio-value">
+                                <?php echo number_format($total_spent, 2); ?> <small>€</small>
+                            </div>
+                        </div>
+
+                        <div class="portfolio-item">
+                            <div class="portfolio-label">Profit / Loss</div>
+                            <div class="portfolio-value <?php echo $profit_class; ?>">
+                                <?php echo ($profit > 0 ? '+' : '') . number_format($profit, 2) . ' €'; ?>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">Est. Value</div>
-                    <div class="stat-number text-green"><?php echo number_format($total_value, 2); ?> <small>€</small></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Total Spent</div>
-                    <div class="stat-number"><?php echo number_format($total_spent, 2); ?> <small>€</small></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Profit / Loss</div>
-                    <div class="stat-number <?php echo $profit_class; ?>">
-                        <?php echo ($profit > 0 ? '+' : '') . number_format($profit, 2) . ' €'; ?>
+
+                <div class="melt-card">
+                    <div class="melt-header">
+                        <div>
+                            <h3 style="margin: 0; color: #d4af37;">Melt Value</h3>
+                            <span style="font-size: 0.85rem; color: #777;">Scrap Material Price</span>
+                        </div>
+                        <div class="melt-total">
+                            <?php echo number_format($meltValueTotal, 2); ?> <small style="font-size: 1rem; color: #777;">€</small>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1;">
+                        <?php if ($goldValue > 0): ?>
+                            <div class="metal-row">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="metal-icon icon-gold">Au</span>
+                                    <div class="metal-info">
+                                        <strong>Gold</strong> (<?php echo number_format($userMetals['Au'], 2); ?>g)
+                                        <small>@ <?php echo number_format($goldPrice, 2); ?> €/g</small>
+                                    </div>
+                                </div>
+                                <div style="font-weight: bold; font-size: 1.1rem;">
+                                    <?php echo number_format($goldValue, 2); ?> €
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($silverValue > 0): ?>
+                            <div class="metal-row">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="metal-icon icon-silver">Ag</span>
+                                    <div class="metal-info">
+                                        <strong>Silver</strong> (<?php echo number_format($userMetals['Ag'], 2); ?>g)
+                                        <small>@ <?php echo number_format($silverPrice, 2); ?> €/g</small>
+                                    </div>
+                                </div>
+                                <div style="font-weight: bold; font-size: 1.1rem;">
+                                    <?php echo number_format($silverValue, 2); ?> €
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($goldValue == 0 && $silverValue == 0): ?>
+                            <p style="text-align: center; color: #999; margin-top: 20px;">
+                                No precious metals found in your collection.
+                            </p>
+                        <?php endif; ?>
+                    </div>
+
+                    <div style="margin-top: 15px; text-align: right; font-size: 0.75rem; color: #aaa;">
+                        <span style="display: inline-block; width: 8px; height: 8px; background: #28a745; border-radius: 50%; margin-right: 5px;"></span>
+                        Live prices updated: <?php echo isset($metalPrices['XAU']['updated_at']) ? date('H:i', $metalPrices['XAU']['updated_at']) : 'N/A'; ?>
                     </div>
                 </div>
             </div>
@@ -357,6 +584,7 @@ $top_periods = $stmtPeriods->fetchAll();
                     <p style="text-align: center; color: #999;">No data.</p>
                 <?php endif; ?>
             </div>
+
         </div>
     </div>
 
