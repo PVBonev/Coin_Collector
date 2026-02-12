@@ -10,11 +10,13 @@ if (!isset($_SESSION['user_id'])) {
 $user_coin_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $user_id = $_SESSION['user_id'];
 
+
 $sql = "SELECT 
             uc.*,
-            cc.title, cc.denomination, cc.year, cc.material, cc.period,
+            cc.title, cc.denomination, cc.year, cc.period,
             cc.weight, cc.diameter, cc.thickness, cc.mintage,
             cc.catalog_image_front, cc.catalog_image_back,
+            cc.is_approved,  
             c.name as country_name, c.flag_image
         FROM user_coins uc
         JOIN catalog_coins cc ON uc.catalog_coin_id = cc.id
@@ -31,12 +33,21 @@ if (!$coin) {
 
 $catalog_id = $coin['catalog_coin_id'];
 
-//how many ppl have it
+$stmtComp = $pdo->prepare("
+    SELECT m.name, m.symbol, cc.percentage 
+    FROM coin_composition cc
+    JOIN materials m ON cc.material_id = m.id
+    WHERE cc.catalog_coin_id = ?
+    ORDER BY cc.percentage DESC
+");
+$stmtComp->execute([$catalog_id]);
+$composition_data = $stmtComp->fetchAll();
+
+// Statistics queries...
 $stmtCount = $pdo->prepare("SELECT COUNT(DISTINCT user_id) FROM user_coins WHERE catalog_coin_id = ?");
 $stmtCount->execute([$catalog_id]);
 $total_owners = $stmtCount->fetchColumn();
 
-//price statistics
 $stmtPrices = $pdo->prepare("
     SELECT 
         MIN(price) as min_price, 
@@ -49,7 +60,6 @@ $stmtPrices = $pdo->prepare("
 $stmtPrices->execute([$catalog_id]);
 $market_data = $stmtPrices->fetch();
 
-//grade separation
 $stmtGrades = $pdo->prepare("
     SELECT grade, COUNT(*) as count 
     FROM user_coins 
@@ -61,9 +71,6 @@ $stmtGrades = $pdo->prepare("
 $stmtGrades->execute([$catalog_id]);
 $most_common_grade = $stmtGrades->fetch();
 
-// ... (след заявките за coin, market_data и т.н.)
-
-// Fetch Gallery Images
 $stmtGallery = $pdo->prepare("SELECT * FROM user_coin_images WHERE user_coin_id = ? ORDER BY id ASC");
 $stmtGallery->execute([$user_coin_id]);
 $gallery_images = $stmtGallery->fetchAll();
@@ -85,7 +92,6 @@ $gallery_images = $stmtGallery->fetchAll();
         <a href="index.php" style="color: #666; text-decoration: none; display: inline-block; margin-bottom: 15px;">&larr; Back to Collection</a>
 
         <div class="image-hero">
-
             <div class="coin-header-info" style="flex: 1; text-align: left; margin: 0;">
                 <h1 class="coin-title" style="margin-bottom: 10px; line-height: 1.2;"><?php echo htmlspecialchars($coin['title']); ?></h1>
 
@@ -116,7 +122,6 @@ $gallery_images = $stmtGallery->fetchAll();
                 <img src="<?php echo htmlspecialchars($front); ?>" class="coin-large-img" alt="Front">
                 <img src="<?php echo htmlspecialchars($back); ?>" class="coin-large-img" alt="Back">
             </div>
-
         </div>
 
         <div class="details-container">
@@ -126,11 +131,9 @@ $gallery_images = $stmtGallery->fetchAll();
                 <div class="data-row">
                     <span class="data-label">Grade / Condition</span>
                     <span class="data-value" style="font-weight: bold; background: #eee; padding: 2px 8px; border-radius: 4px;">
-
                         <a href="grading_guide.php" style="color: inherit; text-decoration: none; border-bottom: 1px dashed #999;" title="View Grading Scale">
                             <?php echo htmlspecialchars($coin['grade']); ?>
                         </a>
-
                     </span>
                 </div>
 
@@ -190,7 +193,6 @@ $gallery_images = $stmtGallery->fetchAll();
                         </div>
                     </div>
                 <?php endif; ?>
-
             </div>
 
             <div class="details-card" style="background: #fdfdfd;">
@@ -200,10 +202,23 @@ $gallery_images = $stmtGallery->fetchAll();
                     <span class="data-label">Denomination</span>
                     <span class="data-value"><?php echo htmlspecialchars($coin['denomination']); ?></span>
                 </div>
+                
                 <div class="data-row">
-                    <span class="data-label">Material</span>
-                    <span class="data-value"><?php echo htmlspecialchars($coin['material']); ?></span>
+                    <span class="data-label">Composition</span>
+                    <span class="data-value" style="text-align: right;">
+                        <?php if (count($composition_data) > 0): ?>
+                            <?php foreach ($composition_data as $comp): ?>
+                                <div>
+                                    <?php echo htmlspecialchars($comp['name']); ?> 
+                                    (<?php echo $comp['percentage']; ?>%)
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            Unknown
+                        <?php endif; ?>
+                    </span>
                 </div>
+
                 <div class="data-row">
                     <span class="data-label">Period</span>
                     <span class="data-value"><?php echo htmlspecialchars($coin['period']); ?></span>
@@ -238,9 +253,7 @@ $gallery_images = $stmtGallery->fetchAll();
                 <?php endif; ?>
 
                 <div class="details-card" style="border-top: 4px solid; color: var(--accent-color); margin-top: 20px; padding-top: 15px; background: #fff;">
-                    <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                        Community Stats
-                    </h3>
+                    <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Community Stats</h3>
 
                     <div class="data-row">
                         <span class="data-label">Total Owners</span>
@@ -264,13 +277,6 @@ $gallery_images = $stmtGallery->fetchAll();
                                 <?php echo number_format($market_data['avg_price'], 2); ?> €
                             </span>
                         </div>
-                        <div class="data-row">
-                            <span class="data-label">Price Range</span>
-                            <span class="data-value" style="font-size: 0.9rem;">
-                                <?php echo number_format($market_data['min_price'], 2); ?> -
-                                <?php echo number_format($market_data['max_price'], 2); ?> €
-                            </span>
-                        </div>
                         <div style="margin-top: 10px; font-size: 0.8rem; color: #888; text-align: center;">
                             Based on <?php echo $market_data['listings_count']; ?> listings currently active.
                         </div>
@@ -279,44 +285,46 @@ $gallery_images = $stmtGallery->fetchAll();
                             No market data available yet.
                         </p>
                     <?php endif; ?>
-
-                    <div style="margin-top: 20px; text-align: center;">
-                        <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" class="btn" style="background: #d4af37; color: white; padding: 5px 15px; font-size: 0.85rem;">
-                            View All Owners
-                        </a>
-                    </div>
                 </div>
 
                 <div style="margin-top: 20px; text-align: center;">
-                    <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" style="color: var(--accent-color); font-size: 0.9rem;">
-                        View Global Catalog Page &rarr;
-                    </a>
+                    <?php if ($coin['is_approved'] == 1): ?>
+                        
+                        <a href="catalog_coin.php?id=<?php echo $coin['catalog_coin_id']; ?>" style="color: var(--accent-color); font-size: 0.9rem;">
+                            View Global Catalog Page &rarr;
+                        </a>
+
+                    <?php else: ?>
+                        
+                        <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; border: 1px solid #ffeeba; display: inline-block;">
+                            <strong>&#9888; Waiting for Approval</strong>
+                            <div style="font-size: 0.85rem; margin-top: 5px;">
+                                This coin is currently under review by administrators.<br>
+                                Once approved, it will appear in the Global Catalog.
+                            </div>
+                        </div>
+
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
         <?php if (isset($coin['is_locked']) && $coin['is_locked'] == 1): ?>
-
             <div class="locked-alert" style="margin-top: 40px;">
                 <strong>&#128274; Coin Locked</strong><br>
                 This coin is currently part of an active trade request.<br>
                 You cannot edit or delete it until the trade is completed or cancelled.
             </div>
-
         <?php else: ?>
-
             <div class="action-bar" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
                 <a href="edit_coin.php?id=<?php echo $coin['id']; ?>" class="btn btn-accent" style="min-width: 150px;">
                     Edit Details
                 </a>
-
                 <button onclick="openDeleteModal()" class="btn" style="background: #dc3545; color: white; min-width: 150px;">
                     Delete Coin
                 </button>
             </div>
-
         <?php endif; ?>
-
     </div>
 
     <div id="deleteModal" class="modal-overlay">
@@ -324,10 +332,8 @@ $gallery_images = $stmtGallery->fetchAll();
             <h2 style="margin-top: 0; color: #dc3545;">Delete Coin?</h2>
             <p>Are you sure you want to remove <strong><?php echo htmlspecialchars($coin['title']); ?></strong> from your collection?</p>
             <p style="font-size: 0.9rem; color: #666;">This action cannot be undone.</p>
-
             <div class="modal-buttons">
                 <button onclick="closeDeleteModal()" class="btn" style="background: #ccc; color: #333;">Cancel</button>
-
                 <form action="actions/edit_coin_process.php" method="POST">
                     <input type="hidden" name="user_coin_id" value="<?php echo $coin['id']; ?>">
                     <input type="hidden" name="action" value="delete">
@@ -339,19 +345,10 @@ $gallery_images = $stmtGallery->fetchAll();
 
     <script>
         const modal = document.getElementById('deleteModal');
-
-        function openDeleteModal() {
-            modal.style.display = 'flex';
-        }
-
-        function closeDeleteModal() {
-            modal.style.display = 'none';
-        }
-        window.onclick = function(event) {
-            if (event.target == modal) closeDeleteModal();
-        }
+        function openDeleteModal() { modal.style.display = 'flex'; }
+        function closeDeleteModal() { modal.style.display = 'none'; }
+        window.onclick = function(event) { if (event.target == modal) closeDeleteModal(); }
     </script>
     <?php include 'includes/footer.php'; ?>
 </body>
-
 </html>
