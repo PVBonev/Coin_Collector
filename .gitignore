@@ -3,3 +3,4 @@
 uploads/coins
 uploads/user_prof_pics
 .DS_Store
+assets/json/metal_prices.json
