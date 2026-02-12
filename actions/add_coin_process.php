@@ -13,7 +13,6 @@ if (!isset($_SESSION['user_id'])) {
 
 function uploadImage($file, $targetDir)
 {
-    // Ако файлът липсва в масива изобщо
     if (!isset($file['error']) || $file['error'] === UPLOAD_ERR_NO_FILE) {
         return null;
     }
@@ -57,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $catalog_coin_id = 0;
 
         if ($is_manual == '1') {
-            // Създаваме НОВА каталожна монета
             $new_title = trim($_POST['new_title']);
             $new_denom = trim($_POST['new_denomination']);
             $new_year = (int)$_POST['new_year'];
@@ -69,7 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $diameter = !empty($_POST['diameter']) ? $_POST['diameter'] : NULL;
             $mintage = !empty($_POST['mintage']) ? $_POST['mintage'] : NULL;
 
-            // ВАЖНО: Премахнахме колоната material от заявката
             $stmtNew = $pdo->prepare("
                 INSERT INTO catalog_coins 
                 (country_id, title, denomination, year, period, description, 
@@ -90,13 +87,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $mintage,
                 $img_front,
                 $img_back,
-                $img_edge, // НОВО
+                $img_edge, 
                 $user_id
             ]);
 
             $catalog_coin_id = $pdo->lastInsertId();
 
-            // --- НОВА ЛОГИКА: ЗАПИС НА МАТЕРИАЛИТЕ В coin_composition ---
             if (isset($_POST['material_id']) && is_array($_POST['material_id'])) {
                 $stmtComp = $pdo->prepare("INSERT INTO coin_composition (catalog_coin_id, material_id, percentage) VALUES (?, ?, ?)");
                 
@@ -104,13 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $m_id = $_POST['material_id'][$i];
                     $m_perc = $_POST['material_percentage'][$i];
                     
-                    // Записваме само ако и двете полета не са празни
                     if (!empty($m_id) && !empty($m_perc)) {
                         $stmtComp->execute([$catalog_coin_id, $m_id, $m_perc]);
                     }
                 }
             }
-            // ---------------------------------------------------------------
 
         } else {
             if (empty($_POST['catalog_coin_id'])) {
@@ -119,7 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $catalog_coin_id = $_POST['catalog_coin_id'];
         }
 
-        // Запис в user_coins (Добавяме и own_image_edge)
         $stmtUser = $pdo->prepare("
             INSERT INTO user_coins 
             (user_id, catalog_coin_id, grade, status, own_image_front, own_image_back, own_image_edge) 
@@ -133,12 +126,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $status,
             $img_front,
             $img_back,
-            $img_edge // НОВО
+            $img_edge 
         ]);
                 
         $new_user_coin_id = $pdo->lastInsertId();
 
-        // Логика за допълнителни снимки в галерията
         if (!empty($_FILES['gallery']['name'][0])) {
             $total_files = count($_FILES['gallery']['name']);
             $stmtGallery = $pdo->prepare("INSERT INTO user_coin_images (user_coin_id, image_path) VALUES (?, ?)");
