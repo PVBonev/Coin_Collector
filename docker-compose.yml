@@ -1,31 +1,20 @@
 version: '3.8'
 
 services:
-  # php + apache container
   web:
-    build: .             # uses the Dockerfile in the current directory
+    build: 
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "8000:80"        # thats where itll open the webserver
-    volumes:
-      - .:/var/www/html  # changes in the project files will be reflected in the container
-    depends_on:
-      - db               # waits for the db container to be ready
-
-  # DB container for MySQL
-  db:
-    image: mysql:8.0
-    container_name: coin_collector_db
-    restart: always
+      - "80:80"  # usually we map port 80 of the container to port 80 of the host
     environment:
-      MYSQL_DATABASE: 'coin_collector_db'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'root_password'
-    ports:
-      - '3306:3306' 
+      # here we set the environment variables for the database connection
+      # these should be taken from fmi
+      - DB_HOST=10.10.108.51
+      - DB_PORT=3306
+      - DB_NAME=coin_collector_db
+      - DB_USER=user
+      - DB_PASSWORD=password
     volumes:
-      - db_data:/var/lib/mysql 
-      - ./DB:/docker-entrypoint-initdb.d 
-
-volumes:
-  db_data:
+      - ./uploads:/var/www/html/uploads  # this maps the uploads directory on the host to the uploads directory in the container
+    restart: unless-stopped
