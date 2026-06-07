@@ -1,6 +1,10 @@
 <?php
 session_start();
 require '../config/db.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
@@ -8,6 +12,17 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
+
+// initialise s3 client
+$s3Client = new S3Client([
+    'version'     => 'latest',
+    'region'      => AWS_S3_REGION,
+    'credentials' => [
+        'key'    => AWS_S3_KEY,
+        'secret' => AWS_S3_SECRET,
+        'token'  => AWS_S3_TOKEN
+    ]
+]);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $action = $_POST['action'] ?? 'update_profile';
@@ -42,25 +57,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $imagePath = null;
 
         if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === UPLOAD_ERR_OK) {
-
-            $targetDir = '../uploads/user_prof_pics/';
-            if (!is_dir($targetDir)) {
-                mkdir($targetDir, 0777, true);
-            }
-
             $file = $_FILES['profile_pic'];
-            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
             if (in_array($ext, $allowed)) {
-                if ($file['size'] <= 5 * 1024 * 1024) { // Max 5MB
-                    $filename = 'user_' . $user_id . '_' . time() . '.' . $ext;
-                    $targetFile = $targetDir . $filename;
+                if ($file['size'] <= 5 * 1024 * 1024) {
+                    // generate name for s3
+                    $filename = 'profile_pics/avatar_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
 
-                    if (move_uploaded_file($file['tmp_name'], $targetFile)) {
-                        $imagePath = 'uploads/user_prof_pics/' . $filename;
-                    } else {
-                        $_SESSION['error'] = "Failed to move uploaded file. Check folder permissions.";
+                    try {
+                        // upload to s3
+                        $result = $s3Client->putObject([
+                            'Bucket'      => AWS_S3_BUCKET,
+                            'Key'         => $filename,
+                            'SourceFile'  => $file['tmp_name'],
+                            'ContentType' => mime_content_type($file['tmp_name'])
+                        ]);
+
+                        // take public url
+                        $imagePath = $result->get('ObjectURL');
+
+                    } catch (AwsException $e) {
+                        $_SESSION['error'] = "Failed to upload to S3: " . $e->getMessage();
                     }
                 } else {
                     $_SESSION['error'] = "Image size too large (Max 5MB).";
@@ -88,7 +107,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['error'] = "Database error: " . $e->getMessage();
         }
 
+        if (!empty($_POST['new_password'])) {
+            $current_password = $_POST['verify_password'];
+            $new_password = $_POST['new_password'];
+
+            $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $user = $stmt->fetch();
+
+            if (password_verify($current_password, $user['password'])) {
+                $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+                $updatePass = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+                $updatePass->execute([$hashed_password, $user_id]);
+                $_SESSION['success'] = "Profile and password updated successfully!";
+            } else {
+                $_SESSION['error'] = "Incorrect current password.";
+            }
+        }
+
         header("Location: ../settings.php");
         exit;
     }
 }
+?>

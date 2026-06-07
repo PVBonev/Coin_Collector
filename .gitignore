@@ -1,6 +1,6 @@
 /ToDo.md
 /StartupAndOtherTips.txt
-uploads/coins
-uploads/user_prof_pics
-.DS_Store
+/vendor/
+/uploads/.DS_Store
 assets/json/metal_prices.json
+.env

@@ -1,9 +1,17 @@
 <?php
-$host = getenv('DB_HOST') ?: 'db'; 
-$db   = getenv('DB_NAME') ?: 'coin_collector_db';
-$user = getenv('DB_USER') ?: 'user';
-$pass = getenv('DB_PASSWORD') ?: 'password';
-$port = getenv('DB_PORT') ?: '3306'; 
+// AWS S3 Configuration (Temporary Lab Credentials)
+define('AWS_S3_KEY', '');
+define('AWS_S3_SECRET', '');
+define('AWS_S3_TOKEN', '');
+define('AWS_S3_REGION', 'us-east-1');
+define('AWS_S3_BUCKET', 'coin-collector-petko-2026');
+
+// Database Configuration
+$host = 'coin-collector-db.cukwcl2czaeg.us-east-1.rds.amazonaws.com'; 
+$db   = 'coin_collector';
+$user = 'admin';
+$pass = ''; 
+$port = '3306';
 
 $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
 

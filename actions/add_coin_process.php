@@ -1,6 +1,10 @@
 <?php
 session_start();
 require '../config/db.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -11,7 +15,19 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-function uploadImage($file, $targetDir)
+// Initialise s3 client use keys from db.php
+$s3Client = new S3Client([
+    'version'     => 'latest',
+    'region'      => AWS_S3_REGION,
+    'credentials' => [
+        'key'    => AWS_S3_KEY,
+        'secret' => AWS_S3_SECRET,
+        'token'  => AWS_S3_TOKEN
+    ]
+]);
+
+// uploads xdirectly to s3
+function uploadImage($file, $s3Client)
 {
     if (!isset($file['error']) || $file['error'] === UPLOAD_ERR_NO_FILE) {
         return null;
@@ -27,13 +43,26 @@ function uploadImage($file, $targetDir)
     if (!in_array($ext, $allowed)) throw new Exception("Invalid file type: $ext");
     if ($file['size'] > 5 * 1024 * 1024) throw new Exception("File too large (Max 5MB)");
 
-    $filename = 'coin_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    // Generate unique name for s3
+    $filename = 'coins/' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
 
-    if (move_uploaded_file($file['tmp_name'], $targetDir . $filename)) {
-        return 'uploads/coins/' . $filename;
+    try {
+        // Send to s3
+        $result = $s3Client->putObject([
+            'Bucket'      => AWS_S3_BUCKET,
+            'Key'         => $filename, // This will make a subfolder "coins" in the bucket
+            'SourceFile'  => $file['tmp_name'],
+            'ContentType' => mime_content_type($file['tmp_name'])
+        ]);
+
+        // returns the public URL of the uploaded image
+        return $result->get('ObjectURL');
+
+    } catch (AwsException $e) {
+        throw new Exception("S3 Upload Failed: " . $e->getMessage());
     }
-    throw new Exception("Failed to move uploaded file.");
 }
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
@@ -43,14 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $status = $_POST['status'];
         $is_manual = $_POST['is_manual'];
 
-        $uploadDir = '../uploads/coins/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-
         $pdo->beginTransaction();
 
-        $img_front = uploadImage($_FILES['img_front'] ?? null, $uploadDir);
-        $img_back  = uploadImage($_FILES['img_back'] ?? null, $uploadDir);
-        $img_edge  = uploadImage($_FILES['img_edge'] ?? null, $uploadDir);
+        // Send $s3Client instead of local folder $uploadDir
+        $img_front = uploadImage($_FILES['img_front'] ?? null, $s3Client);
+        $img_back  = uploadImage($_FILES['img_back'] ?? null, $s3Client);
+        $img_edge  = uploadImage($_FILES['img_edge'] ?? null, $s3Client);
 
         $catalog_coin_id = 0;
 
@@ -75,19 +102,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             ");
 
             $stmtNew->execute([
-                $country_id,
-                $new_title,
-                $new_denom,
-                $new_year,
-                $period,
-                $description,
-                $weight,
-                $diameter,
-                $mintage,
-                $img_front,
-                $img_back,
-                $img_edge, 
-                $user_id
+                $country_id, $new_title, $new_denom, $new_year, $period, $description,
+                $weight, $diameter, $mintage,
+                $img_front, $img_back, $img_edge, $user_id
             ]);
 
             $catalog_coin_id = $pdo->lastInsertId();
@@ -119,13 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         ");
 
         $stmtUser->execute([
-            $user_id,
-            $catalog_coin_id,
-            $grade,
-            $status,
-            $img_front,
-            $img_back,
-            $img_edge 
+            $user_id, $catalog_coin_id, $grade, $status,
+            $img_front, $img_back, $img_edge 
         ]);
                 
         $new_user_coin_id = $pdo->lastInsertId();
@@ -145,7 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     ];
                     
                     try {
-                        $gallery_path = uploadImage($tempFile, $uploadDir);
+                        // Send $s3Client here as well
+                        $gallery_path = uploadImage($tempFile, $s3Client);
                         if ($gallery_path) {
                             $stmtGallery->execute([$new_user_coin_id, $gallery_path]);
                         }
