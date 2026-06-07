@@ -1,6 +1,9 @@
 /ToDo.md
 /StartupAndOtherTips.txt
 /vendor/
-/uploads/
+/uploads/populate_coin_types/
+/uploads/coins/
+/uploads/user_prof_pics/
+
 .DS_Store
 assets/json/metal_prices.json
