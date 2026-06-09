@@ -90,7 +90,7 @@ $gallery_images = $stmtGallery->fetchAll();
 
                 <div class="form-group">
                     <label>Current Market Value (Est. Price)</label>
-                    <input type="number" step="0.01" name="price" value="<?php echo htmlspecialchars($coin['price']); ?>" placeholder="0.00">
+                    <input type="number" step="0.01" name="price" value="<?php echo htmlspecialchars($coin['price'] ?? ''); ?>" placeholder="0.00">
                 </div>
 
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
@@ -99,22 +99,20 @@ $gallery_images = $stmtGallery->fetchAll();
                     <div style="display: flex; gap: 15px;">
                         <div class="form-group" style="flex: 1;">
                             <label style="font-size: 0.85rem;">Purchase Price</label>
-                            <input type="number" step="0.01" name="purchase_price" value="<?php echo htmlspecialchars($coin['purchase_price']); ?>" placeholder="Paid amount">
+                            <input type="number" step="0.01" name="purchase_price" value="<?php echo htmlspecialchars($coin['purchase_price'] ?? ''); ?>" placeholder="Paid amount">
                         </div>
                         <div class="form-group" style="flex: 1;">
                             <label style="font-size: 0.85rem;">Date Acquired</label>
-                            <input type="date" name="purchase_date" value="<?php echo htmlspecialchars($coin['purchase_date']); ?>">
-                        </div>
+                            <input type="date" name="purchase_date" value="<?php echo htmlspecialchars($coin['purchase_date'] ?? ''); ?>">                        </div>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size: 0.85rem;">Acquired From (Location/Source)</label>
-                        <input type="text" name="purchase_location" value="<?php echo htmlspecialchars($coin['purchase_location']); ?>" placeholder="e.g. eBay, Local Shop, Gift...">
-                    </div>
+                        <input type="text" name="purchase_location" value="<?php echo htmlspecialchars($coin['purchase_location'] ?? ''); ?>" placeholder="e.g. eBay, Local Shop, Gift...">                    </div>
                 </div>
                 <div class="form-group">
                     <label>Private Notes</label>
-                    <textarea name="private_notes" rows="3" placeholder="Add personal notes here..."><?php echo htmlspecialchars($coin['private_notes']); ?></textarea>
+                    <textarea name="private_notes" rows="3" placeholder="Add personal notes here..."><?php echo htmlspecialchars($coin['private_notes'] ?? ''); ?></textarea>
                 </div>
 
                 <hr style="margin: 25px 0;">
